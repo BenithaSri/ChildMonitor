@@ -43,7 +43,7 @@
                                 </connections>
                             </button>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="Image" translatesAutoresizingMaskIntoConstraints="NO" id="ot3-39-3xo">
-                                <rect key="frame" x="16" y="191" width="361" height="323"/>
+                                <rect key="frame" x="16" y="189" width="361" height="323"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
                         </subviews>
@@ -257,7 +257,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Iap-Y5-M2z" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="980.91603053435108" y="745.77464788732402"/>
+            <point key="canvasLocation" x="1021" y="755"/>
         </scene>
         <!--Dashboard-->
         <scene sceneID="lyH-gG-loy">
@@ -267,8 +267,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="H6u-br-KQl">
-                                <rect key="frame" x="50" y="164" width="293" height="75"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="H6u-br-KQl">
+                                <rect key="frame" x="50" y="164" width="293" height="162"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
@@ -279,18 +279,15 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
                     <navigationItem key="navigationItem" title="Dashboard" id="mDR-Fa-Lwz"/>
-                    <connections>
-                        <outlet property="messageOL" destination="H6u-br-KQl" id="0hN-Az-v1J"/>
-                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="xat-XM-7zE" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1884.7328244274809" y="745.77464788732402"/>
+            <point key="canvasLocation" x="1885" y="755"/>
         </scene>
-        <!--View Controller-->
+        <!--Password View Controller-->
         <scene sceneID="LfN-1U-WRr">
             <objects>
-                <viewController id="cUn-YY-9P7" sceneMemberID="viewController">
+                <viewController id="cUn-YY-9P7" customClass="PasswordViewController" customModule="ChildrenMonitoring" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Q8C-mJ-fO0">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="842"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -314,6 +311,9 @@
                                 <color key="tintColor" name="AccentColor"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="Send Link!"/>
+                                <connections>
+                                    <action selector="sendLinkBtn:" destination="cUn-YY-9P7" eventType="touchUpInside" id="Q7s-qn-8I2"/>
+                                </connections>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Hf7-m3-GXP"/>
@@ -321,10 +321,13 @@
                         <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     </view>
                     <navigationItem key="navigationItem" id="82b-Kt-QXG"/>
+                    <connections>
+                        <outlet property="passwordOL" destination="dXx-Xz-W9D" id="1Bt-Da-CVe"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="biB-eS-zhZ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="982" y="1488"/>
+            <point key="canvasLocation" x="1021" y="1514"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="Pzd-rG-qdg">
@@ -346,7 +349,7 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="Y08-z9-uH5"/>
+        <segue reference="tYe-yp-CcN"/>
     </inferredMetricsTieBreakers>
     <resources>
         <image name="Image" width="626" height="470"/>

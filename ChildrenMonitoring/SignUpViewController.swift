@@ -29,27 +29,22 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Do any additional setup after loading the view.
-        // Do any additional setup after loading the view.
-        signUpButton.isEnabled = false
-        
-        // Assign delegates to monitor text field changes
-        userName.delegate = self
-        password.delegate = self
-        confirmPassword.delegate = self
-        
-        // Disable secure text entry for passwords
-        password.isSecureTextEntry = true
-        confirmPassword.isSecureTextEntry = true
-        
-        // Disable autocapitalization for password fields
-                password.autocapitalizationType = .none
-                confirmPassword.autocapitalizationType = .none
-                
-                // Set keyboard type for password fields to default
-                password.keyboardType = .default
-                confirmPassword.keyboardType = .default
-        passwordRulesLabel.isHidden = true
+        // Initial setup
+              signUpButton.isEnabled = false
+              passwordRulesLabel.isHidden = true
+              password.isSecureTextEntry = true
+              confirmPassword.isSecureTextEntry = true
+              
+              // Set delegates
+              userName.delegate = self
+              password.delegate = self
+              confirmPassword.delegate = self
+              
+              // Add target actions for text changes
+              userName.addTarget(self, action: #selector(validateInputs), for: .editingChanged)
+              password.addTarget(self, action: #selector(validateInputs), for: .editingChanged)
+              confirmPassword.addTarget(self, action: #selector(validateInputs), for: .editingChanged)
+
     }
     
     
@@ -61,36 +56,44 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
 //           passwordRulesLabel.isHidden = true
 //       }
 //       
-    // Validate inputs and enable the sign-up button
-    @objc func validateInputs() {
-            guard let email = userName.text, isValidGmail(email),
-                  let pass = password.text, let confirmPass = confirmPassword.text else {
+    // Validate inputs to enable the sign-up button
+        @objc func validateInputs() {
+            guard let email = userName.text,
+                  let pass = password.text,
+                  let confirmPass = confirmPassword.text else {
                 signUpButton.isEnabled = false
                 return
             }
             
-            // Enable button if passwords match and meet all criteria
-            if isValidPassword(pass) && pass == confirmPass {
+            // Check if passwords match and meet validation rules
+            let isPasswordValid = isValidPassword(pass)
+            let doPasswordsMatch = pass == confirmPass
+            
+            if isValidGmail(email) && isPasswordValid && doPasswordsMatch {
                 signUpButton.isEnabled = true
-                stopGlowEffect() // Stop glow if password is valid
+                stopGlowEffect()
             } else {
                 signUpButton.isEnabled = false
-                if !isValidPassword(pass) {
-                    startGlowEffect() // Glow if password is invalid
+                
+                // Start glow effect if password is invalid
+                if !isPasswordValid {
+                    startGlowEffect()
+                } else {
+                    stopGlowEffect()
                 }
             }
         }
     
+    
     // Password validation rules
        func isValidPassword(_ password: String) -> Bool {
-           // Regex: At least one special character, one number, and minimum 7 characters
+           // At least one special character, one number, and minimum 7 characters
            let passwordRegex = "^(?=.*[!@#$%^&*(),.?\":{}|<>])(?=.*[0-9]).{7,}$"
            let passwordTest = NSPredicate(format: "SELF MATCHES %@", passwordRegex)
            return passwordTest.evaluate(with: password)
        }
-
     
-    // Show password rules popup only when the rules are not met
+    // Show password rules popup
         func showPasswordRulesPopup() {
             let alert = UIAlertController(title: "Password Rules", message: """
             Your password must:
@@ -98,79 +101,80 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
             - Contain at least 1 special character
             - Contain at least 1 number
             """, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "Got it", style: .default))
+            
+            alert.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+                self?.stopGlowEffect() // Stop glowing when rules are acknowledged
+            })
+            
             present(alert, animated: true)
         }
     
     
-    
     @IBAction func signUpButton(_ sender: Any) {
         guard let email = userName.text, let password = password.text else { return }
-
+                
                 // Firebase Authentication Signup
-                Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
+                Auth.auth().createUser(withEmail: email, password: password) { [weak self] authResult, error in
                     if let error = error {
-                        self.showAlert(title: "Signup Failed", message: error.localizedDescription)
+                        self?.showAlert(title: "Signup Failed", message: error.localizedDescription)
                     } else if let user = authResult?.user {
-                        self.showAlert(title: "Signup Successful", message: "Welcome! Your User ID is \(user.uid)")
+                        self?.showAlert(title: "Signup Successful", message: "Welcome! Your User ID is \(user.uid)")
                     }
                 }
-
     }
     
     //Rules Button
     @IBAction func passwordInfoButtonTapped(_ sender: Any) {
-        passwordRulesLabel.isHidden = false
+        showPasswordRulesPopup()
     }
     
     
-    // Start glow effect on the passwordInfoButton
-        func startGlowEffect() {
-            passwordInfoButton.layer.borderWidth = 2
-            passwordInfoButton.layer.borderColor = UIColor.red.cgColor
-            passwordInfoButton.layer.cornerRadius = 10
-            
-            UIView.animate(withDuration: 1.0,
-                           delay: 0,
-                           options: [.repeat, .autoreverse],
-                           animations: {
-                self.passwordInfoButton.layer.shadowColor = UIColor.red.cgColor
-                self.passwordInfoButton.layer.shadowRadius = 10
-                self.passwordInfoButton.layer.shadowOpacity = 1.0
-                self.passwordInfoButton.layer.shadowOffset = .zero
-            }, completion: nil)
-        }
-    
+    // Glow effect on the passwordInfoButton
+       func startGlowEffect() {
+           passwordInfoButton.layer.borderWidth = 2
+           passwordInfoButton.layer.borderColor = UIColor.red.cgColor
+           passwordInfoButton.layer.cornerRadius = 10
+           
+           UIView.animate(withDuration: 1.0,
+                          delay: 0,
+                          options: [.repeat, .autoreverse],
+                          animations: {
+               self.passwordInfoButton.layer.shadowColor = UIColor.red.cgColor
+               self.passwordInfoButton.layer.shadowRadius = 10
+               self.passwordInfoButton.layer.shadowOpacity = 1.0
+               self.passwordInfoButton.layer.shadowOffset = .zero
+           }, completion: nil)
+       }
     
     // Stop glow effect
-        func stopGlowEffect() {
-            passwordInfoButton.layer.borderWidth = 0
-            passwordInfoButton.layer.shadowOpacity = 0
-        }
-    
-    
-    // Gmail validation
+       func stopGlowEffect() {
+           passwordInfoButton.layer.borderWidth = 0
+           passwordInfoButton.layer.shadowOpacity = 0
+           passwordInfoButton.layer.removeAllAnimations()
+       }
+       
+       // Gmail validation
        func isValidGmail(_ email: String) -> Bool {
            let gmailRegex = "^[A-Za-z0-9._%+-]+@gmail\\.com$"
            let emailTest = NSPredicate(format: "SELF MATCHES %@", gmailRegex)
            return emailTest.evaluate(with: email)
        }
-       
-       // Show alert utility
+    
+    // Show alert utility
        func showAlert(title: String, message: String) {
            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
            alert.addAction(UIAlertAction(title: "OK", style: .default))
            present(alert, animated: true)
        }
-    
-    // Monitor changes in text fields
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-            DispatchQueue.main.async {
-                self.validateInputs()
-            }
-            return true
-        }
-    
+
+//       // Monitor text field changes
+//       func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+//           DispatchQueue.main.async {
+//               self.validateInputs()
+//           }
+//           return true
+//       }
+//    
         
         
         /*
