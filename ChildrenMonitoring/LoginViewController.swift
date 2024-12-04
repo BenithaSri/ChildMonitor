@@ -30,6 +30,11 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     
     @IBOutlet weak var forgotPasswordButton: UIButton!
     
+    @IBOutlet weak var showPassword: UIButton!
+    
+    var isPasswordVisible = false
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -79,6 +84,20 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         }
     
     
+    @IBAction func showPasswordTapped(_ sender: Any) {
+        
+        isPasswordVisible.toggle() // Toggle the visibility state
+                
+                // Update password text field visibility
+                passwordTextField.isSecureTextEntry = !isPasswordVisible
+                
+                // Update button image based on visibility
+                let buttonImage = isPasswordVisible ? UIImage(named: "eye_icon") : UIImage(named: "eye_with_line_icon")
+                showPassword.setImage(buttonImage, for: .normal)
+    }
+    
+    
+    
     @IBAction func toggleRole(_ sender: Any) {
         
         if (sender as AnyObject).isOn {
@@ -121,9 +140,9 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                 if let error = error {
                     self.showAlert(title: "Error", message: "Login failed: \(error.localizedDescription)")
                 } else {
-                    self.showAlert(title: "Success", message: "Welcome Parent!")
+                    self.showAlert(title: "Success", message: "Welcome!")
                     // Navigate to Parent Dashboard
-                    self.performSegue(withIdentifier: "parentDashboardSegue", sender: nil)
+                    self.performSegue(withIdentifier: "dashboardSegue", sender: nil)
                 }
             }
         }
@@ -153,7 +172,7 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                        if isValid {
                            self.showAlert(title: "Success", message: "Welcome Child!")
                            // Navigate to Child Dashboard
-                           self.performSegue(withIdentifier: "childDashboardSegue", sender: nil)
+                           self.performSegue(withIdentifier: "dashboardSegue", sender: nil)
                        } else {
                            self.showAlert(title: "Error", message: "Invalid Parent ID.")
                        }
