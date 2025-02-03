@@ -287,14 +287,163 @@
                     <view key="view" contentMode="scaleToFill" id="JMG-X5-hZd">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" fixedFrame="YES" image="person.badge.plus" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="COu-1M-cVL">
+                                <rect key="frame" x="51" y="178.66666666666663" width="118" height="113"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </imageView>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" fixedFrame="YES" image="gearshape" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="JgJ-Si-JPj">
+                                <rect key="frame" x="76" y="563.33333333333337" width="65" height="61"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </imageView>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" fixedFrame="YES" image="location.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="zRS-ZZ-7aD">
+                                <rect key="frame" x="76" y="385.66666666666674" width="65" height="81"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </imageView>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" fixedFrame="YES" image="message" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="l6n-YN-Uuo">
+                                <rect key="frame" x="244" y="399" width="69" height="59"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </imageView>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" fixedFrame="YES" image="bell" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="a66-Q6-wzw">
+                                <rect key="frame" x="244" y="563.66666666666663" width="69" height="61"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fVD-jF-dfI">
+                                <rect key="frame" x="205" y="206" width="98" height="53"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Add Child"/>
+                                <connections>
+                                    <segue destination="QZe-x9-Hul" kind="show" identifier="addChild" id="jf1-Ur-HU7"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Q4Y-4H-R2a">
+                                <rect key="frame" x="51" y="466" width="98" height="53"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Location"/>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hYa-hQ-k6X">
+                                <rect key="frame" x="227" y="466" width="102" height="53"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Messages"/>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8Ng-qn-Zw4">
+                                <rect key="frame" x="214" y="660" width="120" height="53"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Notifications"/>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="F1z-XO-kQP">
+                                <rect key="frame" x="51" y="660" width="98" height="53"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Settings"/>
+                            </button>
+                        </subviews>
                         <viewLayoutGuide key="safeArea" id="1pw-KV-Q0q"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <color key="backgroundColor" systemColor="systemGray5Color"/>
                     </view>
                     <navigationItem key="navigationItem" id="mDR-Fa-Lwz"/>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="xat-XM-7zE" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1885" y="755"/>
+            <point key="canvasLocation" x="1884.7328244274809" y="754.92957746478874"/>
+        </scene>
+        <!--Add Child View Controller-->
+        <scene sceneID="OkB-gf-gzc">
+            <objects>
+                <viewController id="QZe-x9-Hul" customClass="AddChildViewController" customModule="ChildrenMonitoring" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="4Rt-oz-KxV">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Name of Child" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="faJ-Af-RRg">
+                                <rect key="frame" x="99" y="190" width="195" height="34"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
+                            <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Age" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="x4i-eC-l7P">
+                                <rect key="frame" x="99" y="282" width="195" height="34"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="Dbg-Y0-JrE">
+                                <rect key="frame" x="125" y="387" width="143" height="32"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <segments>
+                                    <segment title="Girl"/>
+                                    <segment title="Boy"/>
+                                </segments>
+                            </segmentedControl>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ddk-Df-7wX">
+                                <rect key="frame" x="146" y="540" width="101" height="49"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="filled" title="Next"/>
+                                <connections>
+                                    <action selector="nextButtonTapped:" destination="QZe-x9-Hul" eventType="touchUpInside" id="vzW-1t-t8B"/>
+                                    <segue destination="pie-Wp-4EE" kind="show" identifier="showOTP" id="EWg-Xi-xi8"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="6tP-0D-B78"/>
+                        <color key="backgroundColor" systemColor="systemGray5Color"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="qtr-Ih-qr5"/>
+                    <connections>
+                        <outlet property="ageTextField" destination="x4i-eC-l7P" id="Vah-cX-FKD"/>
+                        <outlet property="genderSegmentedControl" destination="Dbg-Y0-JrE" id="1N7-JF-CcV"/>
+                        <outlet property="nameTextField" destination="faJ-Af-RRg" id="4eo-HK-YtF"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="d80-pz-wXB" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2698.4732824427479" y="754.92957746478874"/>
+        </scene>
+        <!--View Controller-->
+        <scene sceneID="vyN-yY-xl7">
+            <objects>
+                <viewController id="pie-Wp-4EE" customClass="OTPViewController" customModule="ChildrenMonitoring" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="ZRs-mV-yZQ">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="OTP" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZsO-nn-bFG">
+                                <rect key="frame" x="61" y="162" width="270" height="81"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" textAlignment="natural" lineBreakMode="middleTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8o7-Fd-v6p">
+                                <rect key="frame" x="16" y="343" width="338" height="251"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <string key="text">To connect your child's device, follow these steps:
+
+1.Download the children’s version of the app on the child’s device.
+2.Use the OTP shown above to create an account on the child’s device.
+3.Once entered, the devices will be connected.</string>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                                <lineBreakStrategy key="lineBreakStrategy" pushOut="YES"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="rcy-Pt-XDD"/>
+                        <color key="backgroundColor" systemColor="systemGray5Color"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="ksT-2N-MTo"/>
+                    <connections>
+                        <outlet property="otpLabel" destination="ZsO-nn-bFG" id="39N-EH-Jfh"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="SUN-tZ-vy7" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3504.5801526717555" y="754.92957746478874"/>
         </scene>
         <!--Chat View Controller-->
         <scene sceneID="l4n-KQ-ePR">
@@ -325,7 +474,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="cXj-HU-Grm" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2765" y="741"/>
+            <point key="canvasLocation" x="1885" y="1513"/>
         </scene>
         <!--Password View Controller-->
         <scene sceneID="LfN-1U-WRr">
@@ -397,10 +546,14 @@
     <resources>
         <image name="Image" width="626" height="470"/>
         <image name="arrowshape.right.circle" catalog="system" width="128" height="123"/>
+        <image name="bell" catalog="system" width="125" height="128"/>
         <image name="eye" catalog="system" width="128" height="79"/>
+        <image name="gearshape" catalog="system" width="128" height="123"/>
         <image name="info.bubble" catalog="system" width="128" height="110"/>
+        <image name="location.circle" catalog="system" width="128" height="123"/>
         <image name="logo" width="200" height="200"/>
         <image name="message" catalog="system" width="128" height="116"/>
+        <image name="person.badge.plus" catalog="system" width="128" height="124"/>
         <image name="person.crop.circle.fill" catalog="system" width="128" height="123"/>
         <image name="person.crop.circle.fill.badge.plus" catalog="system" width="128" height="114"/>
         <systemColor name="systemBackgroundColor">
