@@ -154,6 +154,17 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func signUpButton(_ sender: Any) {
         guard let email = userName.text, let password = password.text else { return }
+
+        //xyz
+        if !consentSwitch.isOn {
+                    showAlert(title: "Consent Required", message: "You must agree to the terms before signing up.")
+                    return
+                }
+        // xyz Ensure user has accepted consent
+        if !consentSwitch.isOn {
+            showAlert(title: "Consent Required", message: "You must agree to the terms before signing up.")
+            return
+        }
                         
                 // Firebase Authentication Signup
                 Auth.auth().createUser(withEmail: email, password: password) { [weak self] authResult, error in
@@ -218,6 +229,13 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
            // Update button appearance or icon to reflect current state
            let buttonImage = isConfirmPasswordVisible ? UIImage(systemName: "eye.slash") : UIImage(systemName: "eye")
            showConfirmPassword.setImage(buttonImage, for: .normal)
+    }
+
+    //xyz
+    func showAlert(title: String, message: String) {
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
     }
     
         /*
