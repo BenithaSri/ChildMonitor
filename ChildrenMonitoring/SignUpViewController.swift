@@ -47,63 +47,57 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         super.viewDidLoad()
         
         // Initial setup
-                signUpButton.isEnabled = false
-                //passwordRulesLabel.isHidden = true
-                password.isSecureTextEntry = true
-                confirmPassword.isSecureTextEntry = true
-                
-                // Set delegates
-                userName.delegate = self
-                password.delegate = self
-                confirmPassword.delegate = self
-                
-                // Add target actions for text changes
-                userName.addTarget(self, action: #selector(validateInputs), for: .editingChanged)
-                password.addTarget(self, action: #selector(validateInputs), for: .editingChanged)
-                confirmPassword.addTarget(self, action: #selector(validateInputs), for: .editingChanged)
+        signUpButton.isEnabled = false
+        password.isSecureTextEntry = true
+        confirmPassword.isSecureTextEntry = true
+        
+        // Set delegates
+        userName.delegate = self
+        password.delegate = self
+        confirmPassword.delegate = self
+        
+        // Add target actions for text changes
+        userName.addTarget(self, action: #selector(validateInputs), for: .editingChanged)
+        password.addTarget(self, action: #selector(validateInputs), for: .editingChanged)
+        confirmPassword.addTarget(self, action: #selector(validateInputs), for: .editingChanged)
         
         passwordShow.setImage(UIImage(systemName: "eye"), for: .normal)
         showConfirmPassword.setImage(UIImage(systemName: "eye"), for: .normal)
-        
-        signUpButton.isEnabled = true
-
     }
+    
     @objc func validateInputs() {
-           guard let email = userName.text,
-                 let pass = password.text,
-                 let confirmPass = confirmPassword.text else {
-               signUpButton.isEnabled = false
-               return
-           }
-           
-           // Check if passwords match and meet validation rules
-           let isPasswordValid = isValidPassword(pass)
-           let doPasswordsMatch = pass == confirmPass
-           
-           // Apply green glow if password is valid, red glow if invalid
-           if !pass.isEmpty {
-               if isPasswordValid {
-                   password.applyGlowEffect(color: .green)
-               } else {
-                   password.applyGlowEffect(color: .red)
-               }
-           } else {
-               password.removeGlowEffect()
-           }
-           
-           // Only apply glow effect to confirm password if it's not empty and passwords don't match
-           if !confirmPass.isEmpty && pass != confirmPass {
-               confirmPassword.applyGlowEffect(color: .red)
-           } else {
-               confirmPassword.removeGlowEffect()
-           }
-           
-           if isValidGmail(email) && isPasswordValid && doPasswordsMatch {
-               signUpButton.isEnabled = true
-           } else {
-               signUpButton.isEnabled = false
-           }
-       }
+        // Ensure non-empty values before checking validation
+        guard let email = userName.text, !email.isEmpty,
+              let pass = password.text, !pass.isEmpty,
+              let confirmPass = confirmPassword.text, !confirmPass.isEmpty else {
+            signUpButton.isEnabled = false
+            return
+        }
+        
+        // Check if passwords match and meet validation rules
+        let isPasswordValid = isValidPassword(pass)
+        let doPasswordsMatch = pass == confirmPass
+        
+        // Apply glow effects based on validation
+        if isPasswordValid {
+            password.applyGlowEffect(color: .green)
+        } else {
+            password.applyGlowEffect(color: .red)
+        }
+        
+        if doPasswordsMatch {
+            confirmPassword.removeGlowEffect()
+        } else {
+            confirmPassword.applyGlowEffect(color: .red)
+        }
+        
+        // Only enable signUpButton if all conditions are satisfied
+        if isValidGmail(email) && isPasswordValid && doPasswordsMatch {
+            signUpButton.isEnabled = true
+        } else {
+            signUpButton.isEnabled = false
+        }
+    }
     
     // Modified text field delegate method
         func textFieldDidEndEditing(_ textField: UITextField) {
@@ -153,37 +147,43 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
        }
     
     @IBAction func signUpButton(_ sender: Any) {
-        guard let email = userName.text, let password = password.text else { return }
+        guard let email = userName.text, let password = password.text else {
+               showAlert(title: "Error", message: "Please fill in all the fields.")
+               return
+           }
+           
+           // Firebase Authentication Signup
+           Auth.auth().createUser(withEmail: email, password: password) { [weak self] authResult, error in
+               if let error = error {
+                   // Capture and display the error message from Firebase
+                   self?.handleFirebaseError(error)
+               } else if let authResult = authResult {
+                   // If signup is successful, show success alert
+                   self?.showAlert(title: "Signup Successful", message: "Welcome, \(authResult.user.email ?? "User")!")
+               }
+           }
+    }
+    
+    func handleFirebaseError(_ error: Error) {
+        let nsError = error as NSError
+        var errorMessage = "An unexpected error occurred. Please try again."
 
-//        //xyz
-//        if !consentSwitch.isOn {
-//                    showAlert(title: "Consent Required", message: "You must agree to the terms before signing up.")
-//                    return
-//                }
-//        // xyz Ensure user has accepted consent
-//        if !consentSwitch.isOn {
-//            showAlert(title: "Consent Required", message: "You must agree to the terms before signing up.")
-//            return
-//        }
-                        
-                // Firebase Authentication Signup
-                Auth.auth().createUser(withEmail: email, password: password) { [weak self] authResult, error in
-                    if let error = error {
-                        // Check if the error is due to an existing account
-                        if let authError = error as NSError?,
-                           authError.domain == "FIRAuthErrorDomain",
-                           authError.code == AuthErrorCode.emailAlreadyInUse.rawValue {
-                            // Show alert for existing account
-                            self?.showAlert(title: "Account Already Exists",
-                                            message: "This email is already registered. Please log in instead.")
-                        } else {
-                            // Handle other signup errors
-                            self?.showAlert(title: "Signup Failed", message: error.localizedDescription)
-                        }
-                    } else if let user = authResult?.user {
-                        self?.showAlert(title: "Signup Successful", message: "Welcome!")
-                    }
-                }
+        // Check if the error is from Firebase Authentication
+        if nsError.domain == AuthErrorDomain {
+            switch AuthErrorCode(rawValue: nsError.code) {
+            case .emailAlreadyInUse:
+                errorMessage = "This email is already registered. Please log in instead."
+            case .invalidEmail:
+                errorMessage = "The email address is not valid. Please enter a valid email."
+            case .weakPassword:
+                errorMessage = "The password is too weak. Please choose a stronger password."
+            default:
+                errorMessage = nsError.localizedDescription
+            }
+        }
+
+        // Show the error message in an alert
+        showAlert(title: "Signup Failed", message: errorMessage)
     }
     
     //Rules Button

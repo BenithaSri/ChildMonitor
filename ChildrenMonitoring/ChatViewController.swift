@@ -38,7 +38,7 @@ class ChatViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        chatTitleLabel.text = isParent ? "Parent Chat" : "Child Chat"
+        //chatTitleLabel.text = isParent ? "Parent Chat" : "Child Chat"
         setupUI()
         loadPredefinedMessages()
     }
