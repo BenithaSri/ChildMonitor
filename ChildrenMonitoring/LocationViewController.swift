@@ -57,6 +57,7 @@ class LocationViewController: UIViewController,  UISearchBarDelegate  {
         search.start { (response, error) in
             if let error = error {
                 print("Error searching location: \(error.localizedDescription)")
+                self.showAlert(message: "Error searching location: \(error.localizedDescription)")
                 return
             }
             
