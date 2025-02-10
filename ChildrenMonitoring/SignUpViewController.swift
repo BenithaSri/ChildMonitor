@@ -42,6 +42,8 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var showConfirmPassword: UIButton!
     
     @IBOutlet weak var passwordShow: UIButton!
+
+    @IBOutlet weak var consentSwitch: UISwitch!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -229,6 +231,13 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
            // Update button appearance or icon to reflect current state
            let buttonImage = isConfirmPasswordVisible ? UIImage(systemName: "eye.slash") : UIImage(systemName: "eye")
            showConfirmPassword.setImage(buttonImage, for: .normal)
+    }
+
+     @IBAction func consentSwitchToggled(_ sender: Any) {
+        guard let switchControl = sender as? UISwitch else { return }
+                showAlert(title: switchControl.isOn ? "Consent Given" : "Consent Removed",
+                          message: switchControl.isOn ? "You have agreed to the terms." : "You have revoked your consent.")
+                validateInputs()
     }
 
 //    //xyz
