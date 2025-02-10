@@ -2,7 +2,7 @@
 //  LocationViewController.swift
 //  ChildrenMonitoring
 //
-//  Created by Benitha Sri Panchagiri on 2/7/25.
+//  Created by Yamini Reddy Pesaru on 2/7/25.
 //
 
 import UIKit
@@ -37,6 +37,12 @@ class LocationViewController: UIViewController,  UISearchBarDelegate  {
         
         // Dismiss the keyboard
         searchBar.resignFirstResponder()
+    }
+
+    func showAlert(message: String) {
+        let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
 
     // Method to search for a location and update the map
