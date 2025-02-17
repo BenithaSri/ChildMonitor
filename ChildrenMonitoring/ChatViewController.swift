@@ -3,6 +3,12 @@
 //  ChildrenMonitoring
 //
 //  Created by Rushika on 2/6/25.
+//
+//  ChatViewController.swift
+//  ChildrenMonitoring
+//
+//  Created by Rushika on 2/6/25.
+//
 
 import UIKit
 
@@ -88,9 +94,10 @@ class ChatViewController: UIViewController {
         messagesStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
         // Display all messages
-        for message in messages {
+        for (index, message) in messages.enumerated() {
             let messageLabel = UILabel()
             messageLabel.numberOfLines = 0
+            messageLabel.isUserInteractionEnabled = true  // Enable user interaction for long press
             
             // Remove [PARENT] or [CHILD] prefix
             messageLabel.text = message
@@ -115,6 +122,11 @@ class ChatViewController: UIViewController {
             messageLabel.font = UIFont.systemFont(ofSize: 16)
             messageLabel.padding(10, 16, 10, 16) // Apply padding
 
+            // Add long-press gesture for deleting messages
+            let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+            messageLabel.addGestureRecognizer(longPressGesture)
+            messageLabel.tag = index // Store index to identify message
+            
             messagesStackView.addArrangedSubview(messageLabel)
         }
         
@@ -123,6 +135,22 @@ class ChatViewController: UIViewController {
             let bottomOffset = CGPoint(x: 0, y: self.messagesScrollView.contentSize.height - self.messagesScrollView.bounds.height)
             self.messagesScrollView.setContentOffset(bottomOffset, animated: true)
         }
+    }
+    
+    // Handle long-press to delete a message
+    @objc func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+        guard let messageLabel = gesture.view as? UILabel else { return }
+        
+        let alert = UIAlertController(title: "Delete Message", message: "Are you sure you want to delete this message?", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { _ in
+            self.messages.remove(at: messageLabel.tag)
+            self.updateMessages()
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        present(alert, animated: true)
     }
 }
 
