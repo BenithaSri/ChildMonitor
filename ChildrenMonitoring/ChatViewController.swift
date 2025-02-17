@@ -3,7 +3,7 @@
 //  ChildrenMonitoring
 //
 //  Created by Rushika on 2/6/25.
-//
+
 import UIKit
 
 class ChatViewController: UIViewController {
@@ -18,6 +18,9 @@ class ChatViewController: UIViewController {
     // Chat Data
     private var messages: [String] = []
     
+    // Auto-Reply Timer
+    var autoReplyTimer: Timer?
+
     // Toggle between Parent and Child
     var isParent: Bool = true // Set this to false for Child mode
 
@@ -38,7 +41,6 @@ class ChatViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        //chatTitleLabel.text = isParent ? "Parent Chat" : "Child Chat"
         setupUI()
         loadPredefinedMessages()
     }
@@ -65,8 +67,19 @@ class ChatViewController: UIViewController {
     
     func sendMessage(message: String) {
         let userRole = isParent ? "[PARENT]" : "[CHILD]"
-        messages.append(userRole + " " + message) // Append new message
-        messageTextField.text = "" // Clear input field
+        messages.append("\(userRole) \(message)")  // Append message
+        messageTextField.text = ""  // Clear input field
+        updateMessages()
+        
+        // Reset the auto-reply timer
+        autoReplyTimer?.invalidate()
+        autoReplyTimer = Timer.scheduledTimer(timeInterval: 10.0, target: self, selector: #selector(sendAutoReply), userInfo: nil, repeats: false)
+    }
+
+    // Auto-Reply if no message is sent within 10 seconds
+    @objc func sendAutoReply() {
+        let autoReply = isParent ? "[PARENT] I'm busy right now, I'll reply later. 📌" : "[CHILD] I'm not available now, talk later! 🎮"
+        messages.append(autoReply)
         updateMessages()
     }
 

@@ -521,15 +521,6 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7eW-pB-6C4">
-                                <rect key="frame" x="301" y="783" width="64" height="35"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="filled" title="Send"/>
-                                <connections>
-                                    <action selector="sendMessageButtonTapped:" destination="5e0-Po-95c" eventType="touchUpInside" id="JKI-Yi-Jo3"/>
-                                </connections>
-                            </button>
                             <stackView opaque="NO" contentMode="scaleToFill" fixedFrame="YES" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="rC3-dQ-7or">
                                 <rect key="frame" x="28" y="558" width="337" height="203"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -540,6 +531,15 @@
                                 <viewLayoutGuide key="contentLayoutGuide" id="OhX-wi-66z"/>
                                 <viewLayoutGuide key="frameLayoutGuide" id="MTp-pp-P6F"/>
                             </scrollView>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7eW-pB-6C4">
+                                <rect key="frame" x="297" y="784" width="68" height="35"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="filled" title="Send"/>
+                                <connections>
+                                    <action selector="sendMessageButtonTapped:" destination="5e0-Po-95c" eventType="touchUpInside" id="JKI-Yi-Jo3"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Kii-ye-z35"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -550,7 +550,7 @@
                         <outlet property="messageTextField" destination="a5L-sH-Qua" id="khP-Z1-iHp"/>
                         <outlet property="messagesScrollView" destination="Fd0-xb-mFJ" id="Uxe-TM-cPL"/>
                         <outlet property="messagesStackView" destination="rC3-dQ-7or" id="8xu-de-5Jm"/>
-                        <outlet property="sendButton" destination="7eW-pB-6C4" id="lmD-Tr-kET"/>
+                        <outlet property="sendButton" destination="7eW-pB-6C4" id="pcp-Wi-Toa"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="aNh-C0-3Vo" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
