@@ -44,6 +44,15 @@ class LocationViewController: UIViewController,  UISearchBarDelegate  {
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
     }
+    func addToFavorites(location: MKPointAnnotation) {
+    favouriteLocations.append(location)
+    showAlert(message: "\(location.title ?? "Location") added to favorites.")
+}
+    func removeFromFavorites(location: MKPointAnnotation) {
+    favouriteLocations.removeAll { $0.coordinate.latitude == location.coordinate.latitude && $0.coordinate.longitude == location.coordinate.longitude }
+    showAlert(message: "\(location.title ?? "Location") removed from favorites.")
+}
+ 
 
     // Method to search for a location and update the map
     func searchLocation(query: String) {
