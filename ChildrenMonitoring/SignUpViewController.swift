@@ -235,10 +235,17 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
 
      @IBAction func consentSwitchToggled(_ sender: Any) {
         guard let switchControl = sender as? UISwitch else { return }
+         let consentGiven = switchControl.isOn
+        saveConsentStatus(consentGiven)
                 showAlert(title: switchControl.isOn ? "Consent Given" : "Consent Removed",
                           message: switchControl.isOn ? "You have agreed to the terms." : "You have revoked your consent.")
                 validateInputs()
     }
+
+    func saveConsentStatus(_ isConsented: Bool) {
+    UserDefaults.standard.set(isConsented, forKey: "UserConsentStatus")
+    }
+
 
 //    //xyz
 //    func showAlert(title: String, message: String) {
