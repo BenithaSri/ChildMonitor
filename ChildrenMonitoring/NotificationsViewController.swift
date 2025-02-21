@@ -7,6 +7,8 @@
 
 import UIKit
 import UserNotifications
+import FirebaseFirestore
+import FirebaseAuth
 
 class NotificationsViewController: UIViewController, UNUserNotificationCenterDelegate, UITableViewDataSource, UITableViewDelegate {
 
@@ -29,6 +31,8 @@ class NotificationsViewController: UIViewController, UNUserNotificationCenterDel
             }
         }
     }
+    
+    let db = Firestore.firestore() // Firestore reference
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -38,8 +42,8 @@ class NotificationsViewController: UIViewController, UNUserNotificationCenterDel
         UNUserNotificationCenter.current().delegate = self
         notificationToggle.isOn = false
         
-        // Load any previously saved notifications
-        loadSavedNotifications()
+        // Load any previously saved notifications from Firestore
+        loadNotificationsFromFirestore()
     }
 
     private func setupTableView() {
@@ -120,6 +124,9 @@ class NotificationsViewController: UIViewController, UNUserNotificationCenterDel
 
         // Add to history and trigger didSet observer
         notificationHistory.append(newNotification)
+        
+        // Save notification to Firestore
+        saveNotificationToFirestore(notification: newNotification)
     }
 
     // Save notifications to UserDefaults
@@ -182,5 +189,56 @@ class NotificationsViewController: UIViewController, UNUserNotificationCenterDel
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["TextAlertBadge"])
         UIApplication.shared.applicationIconBadgeNumber = 0 // Reset badge number
         print("Scheduled notifications canceled")
+    }
+
+    // MARK: - Firebase Firestore Methods
+
+    func saveNotificationToFirestore(notification: NotificationItem) {
+        guard let currentUserID = Auth.auth().currentUser?.uid else {
+            print("User not authenticated")
+            return
+        }
+        
+        let notificationData: [String: Any] = [
+            "title": notification.title,
+            "body": notification.body,
+            "timestamp": notification.timestamp
+        ]
+        
+        db.collection("users").document(currentUserID).collection("notifications").addDocument(data: notificationData) { error in
+            if let error = error {
+                print("Error saving notification to Firestore: \(error.localizedDescription)")
+            } else {
+                print("Notification saved to Firestore")
+            }
+        }
+    }
+
+    func loadNotificationsFromFirestore() {
+        guard let currentUserID = Auth.auth().currentUser?.uid else {
+            print("User not authenticated")
+            return
+        }
+        
+        db.collection("users").document(currentUserID).collection("notifications").order(by: "timestamp", descending: true)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching notifications: \(error.localizedDescription)")
+                } else {
+                    self.notificationHistory = snapshot?.documents.compactMap { document in
+                        let data = document.data()
+                        guard let title = data["title"] as? String,
+                              let body = data["body"] as? String,
+                              let timestamp = data["timestamp"] as? Timestamp else {
+                            return nil
+                        }
+                        return NotificationItem(
+                            title: title,
+                            body: body,
+                            timestamp: timestamp.dateValue()
+                        )
+                    } ?? []
+                }
+            }
     }
 }

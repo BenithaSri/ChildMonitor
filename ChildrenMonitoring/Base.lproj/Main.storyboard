@@ -628,8 +628,8 @@
                     </view>
                     <navigationItem key="navigationItem" id="OdK-Ej-kk8"/>
                     <connections>
-                        <outlet property="notificationToggle" destination="0Fu-zZ-PBl" id="Y8o-km-dcE"/>
-                        <outlet property="tableView" destination="R6c-XY-NSZ" id="mpQ-d0-UIX"/>
+                        <outlet property="notificationToggle" destination="0Fu-zZ-PBl" id="26x-hK-u06"/>
+                        <outlet property="tableView" destination="R6c-XY-NSZ" id="vFP-1X-dcK"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ncJ-ai-KXh" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
