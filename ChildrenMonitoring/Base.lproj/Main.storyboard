@@ -516,37 +516,36 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="a5L-sH-Qua">
-                                <rect key="frame" x="16" y="784" width="264" height="34"/>
+                                <rect key="frame" x="28" y="742" width="233" height="34"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
-                            <stackView opaque="NO" contentMode="scaleToFill" fixedFrame="YES" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="rC3-dQ-7or">
-                                <rect key="frame" x="28" y="558" width="337" height="203"/>
+                            <stackView opaque="NO" contentMode="scaleAspectFit" fixedFrame="YES" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="rC3-dQ-7or">
+                                <rect key="frame" x="28" y="352" width="337" height="328"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </stackView>
-                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Fd0-xb-mFJ">
-                                <rect key="frame" x="16" y="254" width="338" height="203"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <viewLayoutGuide key="contentLayoutGuide" id="OhX-wi-66z"/>
-                                <viewLayoutGuide key="frameLayoutGuide" id="MTp-pp-P6F"/>
-                            </scrollView>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7eW-pB-6C4">
-                                <rect key="frame" x="297" y="784" width="68" height="35"/>
+                                <rect key="frame" x="284" y="741" width="68" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="filled" title="Send"/>
+                                <buttonConfiguration key="configuration" style="filled" image="paperplane" catalog="system"/>
                                 <connections>
                                     <action selector="sendMessageButtonTapped:" destination="5e0-Po-95c" eventType="touchUpInside" id="JKI-Yi-Jo3"/>
                                 </connections>
                             </button>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Fd0-xb-mFJ">
+                                <rect key="frame" x="28" y="141" width="338" height="203"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <viewLayoutGuide key="contentLayoutGuide" id="OhX-wi-66z"/>
+                                <viewLayoutGuide key="frameLayoutGuide" id="MTp-pp-P6F"/>
+                            </scrollView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Kii-ye-z35"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
                     <navigationItem key="navigationItem" id="OuJ-KJ-8j1"/>
                     <connections>
-                        <outlet property="chatTitleLabel" destination="5q3-OD-hMd" id="ZN2-TC-mHf"/>
                         <outlet property="messageTextField" destination="a5L-sH-Qua" id="khP-Z1-iHp"/>
                         <outlet property="messagesScrollView" destination="Fd0-xb-mFJ" id="Uxe-TM-cPL"/>
                         <outlet property="messagesStackView" destination="rC3-dQ-7or" id="8xu-de-5Jm"/>
@@ -653,14 +652,8 @@
                                     <outlet property="delegate" destination="DTq-4g-C9s" id="3jb-wG-8yC"/>
                                 </connections>
                             </searchBar>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iuK-iB-qZ5">
-                                <rect key="frame" x="16" y="199" width="144" height="78"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="♡ Favourites"/>
-                            </button>
                             <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" showsUserLocation="YES" showsScale="YES" showsUserTrackingButton="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7To-ss-4sH">
-                                <rect key="frame" x="16" y="285" width="361" height="274"/>
+                                <rect key="frame" x="16" y="251" width="361" height="274"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <standardMapConfiguration key="preferredConfiguration" elevationStyle="realistic" showsTraffic="YES"/>
                             </mapView>
@@ -670,9 +663,9 @@
                     </view>
                     <navigationItem key="navigationItem" id="yoM-0U-Egg"/>
                     <connections>
-                        <outlet property="favourites" destination="iuK-iB-qZ5" id="lWx-MB-Ji7"/>
+                        <outlet property="map" destination="7To-ss-4sH" id="6vv-Dq-y0c"/>
                         <outlet property="mapKit" destination="7To-ss-4sH" id="Hd6-bX-MNb"/>
-                        <outlet property="search" destination="hd8-5C-6Tw" id="etN-bN-bfI"/>
+                        <outlet property="search" destination="hd8-5C-6Tw" id="kRw-eq-U0c"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="H5K-4f-H90" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -711,6 +704,7 @@
         <image name="location.circle" catalog="system" width="128" height="123"/>
         <image name="logo" width="200" height="200"/>
         <image name="message" catalog="system" width="128" height="116"/>
+        <image name="paperplane" catalog="system" width="128" height="119"/>
         <image name="person.badge.plus" catalog="system" width="128" height="124"/>
         <image name="person.crop.circle.fill" catalog="system" width="128" height="123"/>
         <image name="person.crop.circle.fill.badge.plus" catalog="system" width="128" height="114"/>

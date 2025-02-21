@@ -4,159 +4,209 @@
 //
 //  Created by Rushika on 2/6/25.
 //
-//  ChatViewController.swift
-//  ChildrenMonitoring
-//
-//  Created by Rushika on 2/6/25.
-//
 
 import UIKit
-
-class ChatViewController: UIViewController {
+import FirebaseFirestore
+import FirebaseAuth
+ 
+class ChatViewController: UIViewController, UITextFieldDelegate {
     
-    // UI Elements
-    @IBOutlet weak var chatTitleLabel: UILabel!
     @IBOutlet weak var messageTextField: UITextField!
     @IBOutlet weak var sendButton: UIButton!
     @IBOutlet weak var messagesScrollView: UIScrollView!
     @IBOutlet weak var messagesStackView: UIStackView!
     
-    // Chat Data
+    private var db: Firestore!
     private var messages: [String] = []
-    
-    // Auto-Reply Timer
-    var autoReplyTimer: Timer?
-
-    // Toggle between Parent and Child
-    var isParent: Bool = true // Set this to false for Child mode
-
-    // Predefined Messages
-    private var parentMessages: [String] = [
-        "Parent: How was school today? 😊",
-        "Parent: Have you finished your homework? 📚",
-        "Parent: Let's get ready for the weekend activities 🏖️.",
-        "Parent: Can you please clean your room? 🧹"
-    ]
-    
-    private var childMessages: [String] = [
-        "Child: I'm doing good, how about you? 😄",
-        "Child: I finished my homework already! 🏆",
-        "Child: I want to play a game this weekend! 🎮",
-        "Child: My room is messy, but I'll clean it later. 🛏️"
-    ]
+    private var documentIDs: [String] = []
+    private var keyboardHeight: CGFloat = 0
+    private var bottomConstraint: NSLayoutConstraint!
+    var isParent: Bool = true
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        loadPredefinedMessages()
+        setupKeyboardHandling()
+        db = Firestore.firestore()
+        configureViews()
+        loadMessages()
     }
     
-    func setupUI() {
+    private func setupUI() {
+        messageTextField.delegate = self
+        messageTextField.layer.cornerRadius = 20
+        messageTextField.layer.borderWidth = 1
+        messageTextField.layer.borderColor = UIColor.systemGray4.cgColor
+        messageTextField.backgroundColor = .systemBackground
+        messageTextField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: messageTextField.frame.height))
+        messageTextField.leftViewMode = .always
+
         sendButton.layer.cornerRadius = sendButton.frame.height / 2
-    }
+        sendButton.backgroundColor = .systemBlue
+        sendButton.tintColor = .white
 
-    // Load predefined messages for Parent or Child
-    func loadPredefinedMessages() {
-        if isParent {
-            messages.append(contentsOf: parentMessages)
-        } else {
-            messages.append(contentsOf: childMessages)
-        }
-        updateMessages()
+        bottomConstraint = messageTextField.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -8)
+        bottomConstraint.isActive = true
     }
+    
+    private func configureViews() {
+        messagesScrollView.backgroundColor = .systemBackground
+        messagesStackView.axis = .vertical
+        messagesStackView.alignment = .fill
+        messagesStackView.distribution = .fill
+        messagesStackView.spacing = 8
+        messagesStackView.layoutMargins = UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
+        messagesStackView.isLayoutMarginsRelativeArrangement = true
+    }
+    
+    private func setupKeyboardHandling() {
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
 
-    @IBAction func sendMessageButtonTapped(_ sender: UIButton) {
-        if let message = messageTextField.text, !message.isEmpty {
-            sendMessage(message: message)
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        view.addGestureRecognizer(tapGesture)
+    }
+    
+    // MARK: - Keyboard Handling
+    @objc private func keyboardWillShow(_ notification: Notification) {
+        if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+            UIView.animate(withDuration: 0.3) {
+                self.bottomConstraint.constant = -keyboardFrame.height - 8
+                self.view.layoutIfNeeded()
+                self.scrollToBottom()
+            }
         }
     }
     
-    func sendMessage(message: String) {
-        let userRole = isParent ? "[PARENT]" : "[CHILD]"
-        messages.append("\(userRole) \(message)")  // Append message
-        messageTextField.text = ""  // Clear input field
-        updateMessages()
-        
-        // Reset the auto-reply timer
-        autoReplyTimer?.invalidate()
-        autoReplyTimer = Timer.scheduledTimer(timeInterval: 10.0, target: self, selector: #selector(sendAutoReply), userInfo: nil, repeats: false)
-    }
-
-    // Auto-Reply if no message is sent within 10 seconds
-    @objc func sendAutoReply() {
-        let autoReply = isParent ? "[PARENT] I'm busy right now, I'll reply later. 📌" : "[CHILD] I'm not available now, talk later! 🎮"
-        messages.append(autoReply)
-        updateMessages()
-    }
-
-    func updateMessages() {
-        // Clear previous messages from stack
-        messagesStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        
-        // Display all messages
-        for (index, message) in messages.enumerated() {
-            let messageLabel = UILabel()
-            messageLabel.numberOfLines = 0
-            messageLabel.isUserInteractionEnabled = true  // Enable user interaction for long press
-            
-            // Remove [PARENT] or [CHILD] prefix
-            messageLabel.text = message
-                .replacingOccurrences(of: "[PARENT]", with: "")
-                .replacingOccurrences(of: "[CHILD]", with: "")
-
-            // Style messages based on sender
-            if message.contains("[PARENT]") {
-                messageLabel.backgroundColor = UIColor.blue.withAlphaComponent(0.8)
-                messageLabel.textColor = .white
-            } else if message.contains("[CHILD]") {
-                messageLabel.backgroundColor = UIColor.green.withAlphaComponent(0.8)
-                messageLabel.textColor = .white
-            } else {
-                messageLabel.backgroundColor = UIColor.gray.withAlphaComponent(0.15)
-                messageLabel.textColor = .black
-            }
-            
-            messageLabel.layer.cornerRadius = 10
-            messageLabel.layer.masksToBounds = true
-            messageLabel.textAlignment = .left
-            messageLabel.font = UIFont.systemFont(ofSize: 16)
-            messageLabel.padding(10, 16, 10, 16) // Apply padding
-
-            // Add long-press gesture for deleting messages
-            let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
-            messageLabel.addGestureRecognizer(longPressGesture)
-            messageLabel.tag = index // Store index to identify message
-            
-            messagesStackView.addArrangedSubview(messageLabel)
+    @objc private func keyboardWillHide(_ notification: Notification) {
+        UIView.animate(withDuration: 0.3) {
+            self.bottomConstraint.constant = -8
+            self.view.layoutIfNeeded()
         }
+    }
+    
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
+    }
+    
+    // MARK: - Message Handling
+    private func loadMessages() {
+        db.collection("messages").order(by: "timestamp").addSnapshotListener { [weak self] snapshot, error in
+            guard let self = self else { return }
+            if let error = error {
+                print("Error fetching messages: \(error)")
+                return
+            }
+            self.messages.removeAll()
+            self.documentIDs.removeAll()
+            for document in snapshot?.documents ?? [] {
+                if let message = document.data()["message"] as? String {
+                    self.messages.append(message)
+                    self.documentIDs.append(document.documentID)
+                }
+            }
+            self.updateMessages()
+        }
+    }
+    
+    @IBAction func sendMessageButtonTapped(_ sender: UIButton) {
+        sendMessageIfNotEmpty()
+    }
+    
+    private func sendMessageIfNotEmpty() {
+        guard let message = messageTextField.text, !message.isEmpty else { return }
+        let userRole = isParent ? "[PARENT]" : "[CHILD]"
+        let messageData: [String: Any] = [
+            "message": "\(userRole) \(message)",
+            "timestamp": FieldValue.serverTimestamp()
+        ]
+        db.collection("messages").addDocument(data: messageData) { [weak self] error in
+            if let error = error {
+                print("Error sending message: \(error)")
+            } else {
+                self?.messageTextField.text = ""
+            }
+        }
+    }
+    
+    private func updateMessages() {
+        messagesStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        for (index, message) in messages.enumerated() {
+            let messageView = createMessageView(for: message, at: index)
+            messagesStackView.addArrangedSubview(messageView)
+        }
+        scrollToBottom()
+    }
+    
+    private func createMessageView(for message: String, at index: Int) -> UIView {
+        let containerView = UIView()
+        let bubbleView = UIView()
+        let messageLabel = UILabel()
+
+        messageLabel.numberOfLines = 0
+        messageLabel.text = message
+        messageLabel.font = .systemFont(ofSize: 16)
+
+        containerView.addSubview(bubbleView)
+        bubbleView.addSubview(messageLabel)
+
+        bubbleView.layer.cornerRadius = 16
+        bubbleView.layer.masksToBounds = true
+
+        setupMessageConstraints(containerView: containerView, bubbleView: bubbleView, messageLabel: messageLabel, isParentMessage: message.contains("[PARENT]"))
         
-        // Scroll to the latest message
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+        bubbleView.addGestureRecognizer(longPress)
+        bubbleView.isUserInteractionEnabled = true
+        bubbleView.tag = index
+        
+        return containerView
+    }
+    
+    private func setupMessageConstraints(containerView: UIView, bubbleView: UIView, messageLabel: UILabel, isParentMessage: Bool) {
+        containerView.translatesAutoresizingMaskIntoConstraints = false
+        bubbleView.translatesAutoresizingMaskIntoConstraints = false
+        messageLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        messageLabel.numberOfLines = 0
+        messageLabel.lineBreakMode = .byWordWrapping
+        messageLabel.preferredMaxLayoutWidth = view.frame.width * 0.75
+
+        bubbleView.backgroundColor = isParentMessage ? .systemBlue : .systemGray5
+        messageLabel.textColor = isParentMessage ? .white : .black
+
+        NSLayoutConstraint.activate([
+            messageLabel.topAnchor.constraint(equalTo: bubbleView.topAnchor, constant: 8),
+            messageLabel.bottomAnchor.constraint(equalTo: bubbleView.bottomAnchor, constant: -8),
+            messageLabel.leadingAnchor.constraint(equalTo: bubbleView.leadingAnchor, constant: 12),
+            messageLabel.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor, constant: -12),
+
+            bubbleView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 4),
+            bubbleView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -4),
+            bubbleView.widthAnchor.constraint(lessThanOrEqualTo: containerView.widthAnchor, multiplier: 0.75)
+        ])
+
+        if isParentMessage {
+            bubbleView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -8).isActive = true
+        } else {
+            bubbleView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 8).isActive = true
+        }
+    }
+
+    // MARK: - Scroll to Bottom
+    private func scrollToBottom() {
         DispatchQueue.main.async {
-            let bottomOffset = CGPoint(x: 0, y: self.messagesScrollView.contentSize.height - self.messagesScrollView.bounds.height)
+            let bottomOffset = CGPoint(x: 0, y: max(0, self.messagesScrollView.contentSize.height - self.messagesScrollView.bounds.height))
             self.messagesScrollView.setContentOffset(bottomOffset, animated: true)
         }
     }
-    
-    // Handle long-press to delete a message
-    @objc func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
-        guard let messageLabel = gesture.view as? UILabel else { return }
-        
-        let alert = UIAlertController(title: "Delete Message", message: "Are you sure you want to delete this message?", preferredStyle: .alert)
-        
-        alert.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { _ in
-            self.messages.remove(at: messageLabel.tag)
-            self.updateMessages()
-        }))
-        
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        
-        present(alert, animated: true)
-    }
-}
 
-// UILabel Extension to Add Padding
-extension UILabel {
-    func padding(_ top: CGFloat, _ left: CGFloat, _ bottom: CGFloat, _ right: CGFloat) {
-        self.drawText(in: bounds.insetBy(dx: left, dy: top))
+    // MARK: - Handle Message Deletion
+    @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began,
+              let bubbleView = gesture.view else { return }
+        let index = bubbleView.tag
+        let documentID = documentIDs[index]
+        db.collection("messages").document(documentID).delete()
     }
 }
