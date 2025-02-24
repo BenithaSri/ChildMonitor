@@ -75,30 +75,16 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
             signUpButton.isEnabled = false
             return
         }
-        
-        // Check if passwords match and meet validation rules
+
         let isPasswordValid = isValidPassword(pass)
         let doPasswordsMatch = pass == confirmPass
-        
-        // Apply glow effects based on validation
-        if isPasswordValid {
-            password.applyGlowEffect(color: .green)
-        } else {
-            password.applyGlowEffect(color: .red)
-        }
-        
-        if doPasswordsMatch {
-            confirmPassword.removeGlowEffect()
-        } else {
-            confirmPassword.applyGlowEffect(color: .red)
-        }
-        
-        // Only enable signUpButton if all conditions are satisfied
-        if isValidGmail(email) && isPasswordValid && doPasswordsMatch {
-            signUpButton.isEnabled = true
-        } else {
-            signUpButton.isEnabled = false
-        }
+        let isEmailValid = isValidGmail(email)
+        let isConsentGiven = consentSwitch.isOn  // Check if user has given consent
+
+        // Debugging
+        print("isEmailValid: \(isEmailValid), isPasswordValid: \(isPasswordValid), doPasswordsMatch: \(doPasswordsMatch), isConsentGiven: \(isConsentGiven)")
+
+        signUpButton.isEnabled = isEmailValid && isPasswordValid && doPasswordsMatch && isConsentGiven
     }
     
     // Modified text field delegate method
@@ -233,19 +219,43 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
            showConfirmPassword.setImage(buttonImage, for: .normal)
     }
 
-     @IBAction func consentSwitchToggled(_ sender: Any) {
-        guard let switchControl = sender as? UISwitch else { return }
-         let consentGiven = switchControl.isOn
-        saveConsentStatus(consentGiven)
-                showAlert(title: switchControl.isOn ? "Consent Given" : "Consent Removed",
-                          message: switchControl.isOn ? "You have agreed to the terms." : "You have revoked your consent.")
-                validateInputs()
+    @IBAction func consentSwitchToggled(_ sender: UISwitch) {
+        
+        if sender.isOn {
+                showTermsAndConditionsAlert()
+                sender.setOn(false, animated: true) // Reset switch until user agrees
+            }
     }
+    
+    func showTermsAndConditionsAlert() {
+        var agreed = false  // To track checkbox state
 
-    func saveConsentStatus(_ isConsented: Bool) {
-    UserDefaults.standard.set(isConsented, forKey: "UserConsentStatus")
+        let alert = UIAlertController(title: "Terms and Conditions", message: """
+        Please agree to the following terms:
+        1. We collect data to enhance child safety.
+        2. Your data will be encrypted and secure.
+        3. You must be the legal guardian to sign up.
+        """, preferredStyle: .alert)
+
+        let agreeAction = UIAlertAction(title: "☐ Agree", style: .default) { action in
+            agreed.toggle() // Toggle agreement state
+            let newTitle = agreed ? "☑ Agree" : "☐ Agree"
+            alert.actions[0].setValue(newTitle, forKey: "title")
+
+            if agreed {
+                self.consentSwitch.setOn(true, animated: true)
+                self.validateInputs() // Revalidate sign-up button state
+            } else {
+                self.consentSwitch.setOn(false, animated: true)
+            }
+        }
+
+        alert.addAction(agreeAction)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+
+        present(alert, animated: true)
     }
-
+    
 
 //    //xyz
 //    func showAlert(title: String, message: String) {

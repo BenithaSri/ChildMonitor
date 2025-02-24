@@ -138,7 +138,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LLs-4i-j5T">
-                                <rect key="frame" x="119" y="636" width="162" height="35"/>
+                                <rect key="frame" x="119" y="709" width="162" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="tintColor" systemColor="systemOrangeColor"/>
                                 <state key="normal" title="Button"/>
@@ -148,6 +148,20 @@
                                     <segue destination="r16-1R-zSe" kind="show" identifier="userSegue" id="Y08-z9-uH5"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Consent Management" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uv8-Qy-nwJ">
+                                <rect key="frame" x="55" y="636" width="169" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="LE6-4S-Vv1">
+                                <rect key="frame" x="271" y="636" width="49" height="31"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <connections>
+                                    <action selector="consentSwitchToggled:" destination="D2c-M7-AwK" eventType="valueChanged" id="tqz-uG-IdB"/>
+                                </connections>
+                            </switch>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="J24-ag-eGF"/>
                         <color key="backgroundColor" systemColor="systemGray5Color"/>
@@ -156,6 +170,7 @@
                     <navigationItem key="navigationItem" id="n5c-5s-Yyu"/>
                     <connections>
                         <outlet property="confirmPassword" destination="yua-WU-ZZX" id="lHQ-tp-i23"/>
+                        <outlet property="consentSwitch" destination="LE6-4S-Vv1" id="bnO-ZW-Tuy"/>
                         <outlet property="password" destination="81g-sN-qDw" id="HQ8-rW-dWj"/>
                         <outlet property="passwordInfoButton" destination="Ihl-Ze-pzI" id="oWw-sb-KOD"/>
                         <outlet property="passwordShow" destination="eT0-fk-9Nv" id="tyL-AX-pjP"/>
