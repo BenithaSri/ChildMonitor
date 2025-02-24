@@ -241,3 +241,36 @@ extension LocationViewController: CLLocationManagerDelegate {
         locationManager.stopUpdatingLocation()
     }
 }
+
+
+
+// Method to search for a location and update the map
+    func searchLocation(query: String) {
+        let request = MKLocalSearch.Request()
+            request.naturalLanguageQuery = query
+            
+            let search = MKLocalSearch(request: request)
+            
+            search.start { (response, error) in
+                if let error = error {
+                    print("Error searching location: \(error.localizedDescription)")
+                    self.showAlert(message: "Error searching location: \(error.localizedDescription)")
+                    return
+                }
+                
+                if let response = response, let item = response.mapItems.first {
+                    let coordinate = item.placemark.coordinate
+                    let region = MKCoordinateRegion(center: coordinate, latitudinalMeters: 1000, longitudinalMeters: 1000)
+                    
+                    self.mapKit.setRegion(region, animated: true)
+                    
+                    let annotation = MKPointAnnotation()
+                    annotation.coordinate = coordinate
+                    annotation.title = item.name
+                    self.mapKit.addAnnotation(annotation)
+                    
+                    // Store last searched annotation
+                    self.lastSearchedAnnotation = annotation
+                }
+            }
+    }
