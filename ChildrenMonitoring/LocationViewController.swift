@@ -17,6 +17,7 @@ class LocationViewController: UIViewController, UISearchBarDelegate, MKLocalSear
         setupLocationServices()
     }
     
+    // Setup UI components and delegates
     private func setupUI() {
         search.delegate = self
         search.showsCancelButton = true
@@ -25,21 +26,24 @@ class LocationViewController: UIViewController, UISearchBarDelegate, MKLocalSear
         
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.isHidden = true
+        tableView.isHidden = true // Hide search results initially
         
         view.bringSubviewToFront(tableView)
         
+        // Add navigation button to view saved locations
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Saved Places",
                                                           style: .plain,
                                                           target: self,
                                                           action: #selector(showSavedLocations))
         
+        // Register annotation views
         map.register(MKMarkerAnnotationView.self,
                     forAnnotationViewWithReuseIdentifier: MKMapViewDefaultAnnotationViewReuseIdentifier)
         map.register(MKMarkerAnnotationView.self,
                     forAnnotationViewWithReuseIdentifier: MKMapViewDefaultClusterAnnotationViewReuseIdentifier)
     }
     
+    // Setup location services and request permission
     private func setupLocationServices() {
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
@@ -53,7 +57,7 @@ class LocationViewController: UIViewController, UISearchBarDelegate, MKLocalSear
     
     @objc func showSavedLocations() {
         performSegue(withIdentifier: "ShowSavedLocations", sender: nil)
-        printSavedLocations() // Print locations when viewing saved places
+        printSavedLocations() // Print saved locations to console
     }
     
     // MARK: - Search Bar Delegate Methods
@@ -133,47 +137,12 @@ class LocationViewController: UIViewController, UISearchBarDelegate, MKLocalSear
         search.resignFirstResponder()
     }
     
-    // MARK: - Map View Delegate Methods
-    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-        guard !(annotation is MKUserLocation) else { return nil }
-        
-        let identifier = "LocationPin"
-        var annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier)
-        
-        if annotationView == nil {
-            annotationView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: identifier)
-            annotationView?.canShowCallout = true
-            
-            let saveButton = UIButton(type: .system)
-            saveButton.setTitle("Save Location", for: .normal)
-            saveButton.frame = CGRect(x: 0, y: 0, width: 100, height: 30)
-            annotationView?.rightCalloutAccessoryView = saveButton
-        } else {
-            annotationView?.annotation = annotation
-        }
-        
-        return annotationView
-    }
-    
-    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
-        guard let annotation = view.annotation else { return }
-        
-        saveLocation(name: annotation.title ?? "Unknown Location",
-                    coordinate: annotation.coordinate)
-        
-        let alert = UIAlertController(title: "Success",
-                                    message: "Location saved successfully!",
-                                    preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
-    }
-    
     // MARK: - Search Location Method
     func searchLocation(query: String) {
-        let searchRequest = MKLocalSearch.Request()
-        searchRequest.naturalLanguageQuery = query
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = query
         
-        let search = MKLocalSearch(request: searchRequest)
+        let search = MKLocalSearch(request: request)
         
         search.start { [weak self] response, error in
             guard let self = self else { return }
@@ -194,37 +163,10 @@ class LocationViewController: UIViewController, UISearchBarDelegate, MKLocalSear
             self.map.addAnnotation(annotation)
             
             let region = MKCoordinateRegion(center: item.placemark.coordinate,
-                                          latitudinalMeters: 1000,
-                                          longitudinalMeters: 1000)
+                                            latitudinalMeters: 1000,
+                                            longitudinalMeters: 1000)
             self.map.setRegion(region, animated: true)
         }
-    }
-    
-    // MARK: - Save Location Method
-    func saveLocation(name: String?, coordinate: CLLocationCoordinate2D) {
-        guard let name = name else { return }
-        
-        var savedLocations = UserDefaults.standard.array(forKey: "savedLocations") as? [[String: Any]] ?? []
-        
-        var distance: CLLocationDistance?
-        if let userLocation = locationManager.location {
-            let locationCoordinate = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
-            distance = userLocation.distance(from: locationCoordinate)
-        }
-        
-        let location: [String: Any] = [
-            "name": name,
-            "latitude": coordinate.latitude,
-            "longitude": coordinate.longitude,
-            "timestamp": Date().timeIntervalSince1970,
-            "distance": distance ?? 0
-        ]
-        
-        savedLocations.append(location)
-        UserDefaults.standard.set(savedLocations, forKey: "savedLocations")
-        
-        // Print saved locations to console
-        printSavedLocations()
     }
 }
 
@@ -234,43 +176,10 @@ extension LocationViewController: CLLocationManagerDelegate {
         guard let location = locations.last else { return }
         
         let region = MKCoordinateRegion(center: location.coordinate,
-                                      latitudinalMeters: 1000,
-                                      longitudinalMeters: 1000)
+                                        latitudinalMeters: 1000,
+                                        longitudinalMeters: 1000)
         map.setRegion(region, animated: true)
         
         locationManager.stopUpdatingLocation()
     }
 }
-
-
-
-// Method to search for a location and update the map
-    func searchLocation(query: String) {
-        let request = MKLocalSearch.Request()
-            request.naturalLanguageQuery = query
-            
-            let search = MKLocalSearch(request: request)
-            
-            search.start { (response, error) in
-                if let error = error {
-                    print("Error searching location: \(error.localizedDescription)")
-                    self.showAlert(message: "Error searching location: \(error.localizedDescription)")
-                    return
-                }
-                
-                if let response = response, let item = response.mapItems.first {
-                    let coordinate = item.placemark.coordinate
-                    let region = MKCoordinateRegion(center: coordinate, latitudinalMeters: 1000, longitudinalMeters: 1000)
-                    
-                    self.mapKit.setRegion(region, animated: true)
-                    
-                    let annotation = MKPointAnnotation()
-                    annotation.coordinate = coordinate
-                    annotation.title = item.name
-                    self.mapKit.addAnnotation(annotation)
-                    
-                    // Store last searched annotation
-                    self.lastSearchedAnnotation = annotation
-                }
-            }
-    }
