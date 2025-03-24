@@ -65,6 +65,65 @@ class NotificationsViewController: UIViewController, UNUserNotificationCenterDel
         }
     }
 
+    //checking if child location is updated
+func listenForChildLocationUpdates() {
+    guard let currentUserID = Auth.auth().currentUser?.uid else {
+        print("User not authenticated")
+        return
+    }
+
+    let locationRef = db.collection("users").document(currentUserID).collection("childLocation")
+
+    locationRef.addSnapshotListener { snapshot, error in
+        if let error = error {
+            print("Error listening for location updates: \(error.localizedDescription)")
+            return
+        }
+
+        guard let documents = snapshot?.documents else { return }
+
+        for document in documents {
+            let data = document.data()
+            if let latitude = data["latitude"] as? Double,
+               let longitude = data["longitude"] as? Double,
+               let timestamp = data["timestamp"] as? Timestamp {
+
+                let locationUpdateMessage = "Child's new location: (\(latitude), \(longitude))"
+                let notificationItem = NotificationItem(
+                    title: "Location Update",
+                    body: locationUpdateMessage,
+                    timestamp: timestamp.dateValue()
+                )
+
+                // Add to history and Firestore
+                self.notificationHistory.append(notificationItem)
+                self.saveNotificationToFirestore(notification: notificationItem)
+
+                // Trigger local notification
+                self.triggerLocalNotification(title: "Location Update", body: locationUpdateMessage)
+            }
+        }
+    }
+}
+
+//Trigger notification when child location is updated
+func triggerLocalNotification(title: String, body: String) {
+    let content = UNMutableNotificationContent()
+    content.title = title
+    content.body = body
+    content.sound = .default
+
+    let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+    let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+
+    UNUserNotificationCenter.current().add(request) { error in
+        if let error = error {
+            print("Error displaying notification: \(error.localizedDescription)")
+        }
+    }
+}
+
+
     private func showPermissionAlert() {
         let alert = UIAlertController(
             title: "Notifications Disabled",
