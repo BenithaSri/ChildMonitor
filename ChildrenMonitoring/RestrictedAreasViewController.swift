@@ -146,6 +146,17 @@ extension RestrictedAreasViewController: UITableViewDelegate, UITableViewDataSou
             showDeleteConfirmation(for: loc.id ?? "", at: indexPath)
         }
     }
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        // Initialization code
+    }
+
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        super.setSelected(selected, animated: animated)
+
+        // Configure the view for the selected state
+    }
     
     func showDeleteConfirmation(for documentId: String, at indexPath: IndexPath) {
             let alert = UIAlertController(
@@ -169,22 +180,4 @@ extension RestrictedAreasViewController: UITableViewDelegate, UITableViewDataSou
             present(alert, animated: true, completion: nil)
         }
     
-}
-
-class LocationTVC: UITableViewCell {
-
-    @IBOutlet weak var titleLbl: UILabel!
-    @IBOutlet weak var addressLBL: UILabel!
-    
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        // Initialization code
-    }
-
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-
-        // Configure the view for the selected state
-    }
-
 }
