@@ -49,4 +49,31 @@ class AddChildViewController: UIViewController {
                 alert.addAction(UIAlertAction(title: "OK", style: .default))
                 present(alert, animated: true)
             }
+
+    // Dismiss keyboard when tapping outside of text fields
+    func setupGestureToDismissKeyboard() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        view.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
+    }
+    
+    // Validate that age is a number and within a valid range
+    func isValidAge(_ age: String?) -> Bool {
+        guard let age = age, let ageInt = Int(age) else { return false }
+        return (ageInt >= 1 && ageInt <= 18)
+    }
+    
+    // Save data locally
+    func saveChildData(name: String, age: String, gender: String) {
+        UserDefaults.standard.set(name, forKey: "childName")
+        UserDefaults.standard.set(age, forKey: "childAge")
+        UserDefaults.standard.set(gender, forKey: "childGender")
+    }
+
+
+
+    
         }
