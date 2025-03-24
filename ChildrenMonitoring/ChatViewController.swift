@@ -4,12 +4,12 @@
 //
 //  Created by Rushika on 2/6/25.
 //
-
 import UIKit
 import FirebaseFirestore
 import FirebaseAuth
- 
-class ChatViewController: UIViewController, UITextFieldDelegate {
+import FirebaseStorage
+
+class ChatViewController: UIViewController, UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     @IBOutlet weak var messageTextField: UITextField!
     @IBOutlet weak var sendButton: UIButton!
@@ -17,6 +17,7 @@ class ChatViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var messagesStackView: UIStackView!
     
     private var db: Firestore!
+    private var storage: Storage!
     private var messages: [String] = []
     private var documentIDs: [String] = []
     private var keyboardHeight: CGFloat = 0
@@ -28,6 +29,7 @@ class ChatViewController: UIViewController, UITextFieldDelegate {
         setupUI()
         setupKeyboardHandling()
         db = Firestore.firestore()
+        storage = Storage.storage()
         configureViews()
         loadMessages()
     }
@@ -103,6 +105,9 @@ class ChatViewController: UIViewController, UITextFieldDelegate {
                 if let message = document.data()["message"] as? String {
                     self.messages.append(message)
                     self.documentIDs.append(document.documentID)
+                } else if let imageUrl = document.data()["imageUrl"] as? String {
+                    self.messages.append(imageUrl)
+                    self.documentIDs.append(document.documentID)
                 }
             }
             self.updateMessages()
@@ -116,15 +121,53 @@ class ChatViewController: UIViewController, UITextFieldDelegate {
     private func sendMessageIfNotEmpty() {
         guard let message = messageTextField.text, !message.isEmpty else { return }
         let userRole = isParent ? "[PARENT]" : "[CHILD]"
-        let messageData: [String: Any] = [
-            "message": "\(userRole) \(message)",
-            "timestamp": FieldValue.serverTimestamp()
-        ]
+        
+        if let image = selectedImage {  // Assuming selectedImage is a property where the selected image is stored
+            uploadImage(image) { [weak self] imageUrl in
+                let messageData: [String: Any] = [
+                    "message": "\(userRole) \(message)",
+                    "timestamp": FieldValue.serverTimestamp(),
+                    "imageUrl": imageUrl
+                ]
+                self?.sendMessageToFirestore(messageData)
+            }
+        } else {
+            let messageData: [String: Any] = [
+                "message": "\(userRole) \(message)",
+                "timestamp": FieldValue.serverTimestamp()
+            ]
+            sendMessageToFirestore(messageData)
+        }
+    }
+    
+    private func sendMessageToFirestore(_ messageData: [String: Any]) {
         db.collection("messages").addDocument(data: messageData) { [weak self] error in
             if let error = error {
                 print("Error sending message: \(error)")
             } else {
                 self?.messageTextField.text = ""
+            }
+        }
+    }
+    
+    private func uploadImage(_ image: UIImage, completion: @escaping (String) -> Void) {
+        guard let imageData = image.jpegData(compressionQuality: 0.75) else { return }
+        let imageName = UUID().uuidString
+        let imageRef = storage.reference().child("images/\(imageName).jpg")
+        
+        imageRef.putData(imageData, metadata: nil) { metadata, error in
+            if let error = error {
+                print("Error uploading image: \(error)")
+                return
+            }
+            imageRef.downloadURL { url, error in
+                if let error = error {
+                    print("Error getting image URL: \(error)")
+                    return
+                }
+                if let imageUrl = url?.absoluteString {
+                    completion(imageUrl)
+                }
             }
         }
     }
@@ -141,24 +184,39 @@ class ChatViewController: UIViewController, UITextFieldDelegate {
     private func createMessageView(for message: String, at index: Int) -> UIView {
         let containerView = UIView()
         let bubbleView = UIView()
-        let messageLabel = UILabel()
-
-        messageLabel.numberOfLines = 0
-        messageLabel.text = message
-        messageLabel.font = .systemFont(ofSize: 16)
-
-        containerView.addSubview(bubbleView)
-        bubbleView.addSubview(messageLabel)
-
-        bubbleView.layer.cornerRadius = 16
-        bubbleView.layer.masksToBounds = true
-
-        setupMessageConstraints(containerView: containerView, bubbleView: bubbleView, messageLabel: messageLabel, isParentMessage: message.contains("[PARENT]"))
         
-        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
-        bubbleView.addGestureRecognizer(longPress)
-        bubbleView.isUserInteractionEnabled = true
-        bubbleView.tag = index
+        if message.hasPrefix("http") {  // Check if it's an image URL
+            let imageView = UIImageView()
+            imageView.contentMode = .scaleAspectFill
+            imageView.clipsToBounds = true
+            imageView.loadImage(from: message)  // Load image from URL
+            containerView.addSubview(imageView)
+            // Set constraints for imageView
+            imageView.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                imageView.topAnchor.constraint(equalTo: containerView.topAnchor),
+                imageView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
+                imageView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+                imageView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor)
+            ])
+        } else {
+            let messageLabel = UILabel()
+            messageLabel.numberOfLines = 0
+            messageLabel.text = message
+            messageLabel.font = .systemFont(ofSize: 16)
+            containerView.addSubview(bubbleView)
+            bubbleView.addSubview(messageLabel)
+
+            bubbleView.layer.cornerRadius = 16
+            bubbleView.layer.masksToBounds = true
+
+            setupMessageConstraints(containerView: containerView, bubbleView: bubbleView, messageLabel: messageLabel, isParentMessage: message.contains("[PARENT]"))
+            
+            let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+            bubbleView.addGestureRecognizer(longPress)
+            bubbleView.isUserInteractionEnabled = true
+            bubbleView.tag = index
+        }
         
         return containerView
     }
@@ -208,5 +266,17 @@ class ChatViewController: UIViewController, UITextFieldDelegate {
         let index = bubbleView.tag
         let documentID = documentIDs[index]
         db.collection("messages").document(documentID).delete()
+    }
+}
+
+extension UIImageView {
+    func loadImage(from url: String) {
+        guard let url = URL(string: url) else { return }
+        URLSession.shared.dataTask(with: url) { (data, _, _) in
+            guard let data = data, let image = UIImage(data: data) else { return }
+            DispatchQueue.main.async {
+                self.image = image
+            }
+        }.resume()
     }
 }
