@@ -214,6 +214,43 @@ func triggerLocalNotification(title: String, body: String) {
                 )
             }
         }
+
+        //Sort notifications
+        func loadNotificationsFromFirestore() {
+    guard let currentUserID = Auth.auth().currentUser?.uid else {
+        print("User not authenticated")
+        return
+    }
+
+    db.collection("users").document(currentUserID).collection("notifications").order(by: "timestamp", descending: true)
+        .getDocuments { snapshot, error in
+            if let error = error {
+                print("Error fetching notifications: \(error.localizedDescription)")
+            } else {
+                self.notificationHistory = snapshot?.documents.compactMap { document in
+                    let data = document.data()
+                    guard let title = data["title"] as? String,
+                          let body = data["body"] as? String,
+                          let timestamp = data["timestamp"] as? Timestamp else {
+                        return nil
+                    }
+                    return NotificationItem(
+                        title: title,
+                        body: body,
+                        timestamp: timestamp.dateValue()
+                    )
+                } ?? []
+                
+                // Ensure sorting again just in case
+                self.notificationHistory.sort { $0.timestamp > $1.timestamp }
+
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
+                }
+            }
+        }
+}
+
     }
 
     // MARK: - TableView DataSource
