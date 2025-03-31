@@ -31,58 +31,47 @@ class RestrictedAreasViewController: UIViewController {
         self.getRestrictedLocations()
     }
     
-    func getRestrictedLocations() -> Void {
-        
-        let database = Firestore.firestore()
-        let id = Auth.auth().currentUser?.uid ?? ""
-        let child_id = childData?.id ?? ""
-        
-        let docRef = database.collection("Restricted_Locations")
-            .whereField("parent_id", isEqualTo: id)
-            .whereField("child_id", isEqualTo: child_id)
-        
-        docRef.addSnapshotListener { (querySnapshot, err) in
-            if let err = err {
-                
-                SVProgressHUD.dismiss()
-                print("Error getting documents: \(err)")
-                
-            } else {
-                
-                SVProgressHUD.dismiss()
-                
-                self.restrictedLocations.removeAll()
-                for document in querySnapshot!.documents {
-                    print("\(document.documentID) => \(document.data())")
-                    
-                    let data = document.data()
-                    var model = RestrictedLocationModel()
-                    
-                    model.id = document.documentID
-                    model.parent_id = data["parent_id"] as? String ?? ""
-                    model.child_id = data["child_id"] as? String ?? ""
-                    model.title = data["title"] as? String ?? ""
-                    model.address = data["address"] as? String ?? ""
-                    model.lat = data["lat"] as? Double ?? 0.0
-                    model.lng = data["lng"] as? Double ?? 0.0
-                    
-                    self.restrictedLocations.append(model)
-                }
-                
-                if self.restrictedLocations.count > 0 {
-                    
-                    self.locationsTV.isHidden = false
-                    self.noRecordLBL.isHidden = true
-                }else {
-                    
-                    self.locationsTV.isHidden = true
-                    self.noRecordLBL.isHidden = false
-                }
-                
-                self.locationsTV.reloadData()
+    func getRestrictedLocations() {
+    guard let id = Auth.auth().currentUser?.uid, !id.isEmpty,
+          let child_id = childData?.id, !child_id.isEmpty else {
+        print("Invalid parent or child ID")
+        return
+    }
+
+    let database = Firestore.firestore()
+    let docRef = database.collection("Restricted_Locations")
+        .whereField("parent_id", isEqualTo: id)
+        .whereField("child_id", isEqualTo: child_id)
+
+    docRef.getDocuments { (querySnapshot, error) in
+        DispatchQueue.main.async {
+            SVProgressHUD.dismiss()
+
+            if let error = error {
+                print("Error getting documents: \(error.localizedDescription)")
+                return
             }
+
+            self.restrictedLocations = querySnapshot?.documents.compactMap { document in
+                let data = document.data()
+                return RestrictedLocationModel(
+                    id: document.documentID,
+                    parent_id: data["parent_id"] as? String ?? "",
+                    child_id: data["child_id"] as? String ?? "",
+                    title: data["title"] as? String ?? "",
+                    address: data["address"] as? String ?? "",
+                    lat: data["lat"] as? Double ?? 0.0,
+                    lng: data["lng"] as? Double ?? 0.0
+                )
+            } ?? []
+
+            let hasRecords = !self.restrictedLocations.isEmpty
+            self.locationsTV.isHidden = !hasRecords
+            self.noRecordLBL.isHidden = hasRecords
+            self.locationsTV.reloadData()
         }
     }
+}
 
     /*
     // MARK: - Navigation
