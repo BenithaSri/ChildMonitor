@@ -2,281 +2,95 @@
 //  ChatViewController.swift
 //  ChildrenMonitoring
 //
-//  Created by Rushika on 2/6/25.
-//
+//  Created by Rushika on 3/30/25.
+
+
 import UIKit
 import FirebaseFirestore
 import FirebaseAuth
-import FirebaseStorage
 
-class ChatViewController: UIViewController, UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class ChildDetailViewController: UIViewController {
+
+    @IBOutlet weak var profileIV: UIImageView!
+    @IBOutlet weak var nameLBL: UILabel!
+    @IBOutlet weak var deviceLBL: UILabel!
+    @IBOutlet weak var addressLBL: UILabel!
     
-    @IBOutlet weak var messageTextField: UITextField!
-    @IBOutlet weak var sendButton: UIButton!
-    @IBOutlet weak var messagesScrollView: UIScrollView!
-    @IBOutlet weak var messagesStackView: UIStackView!
-    
-    private var db: Firestore!
-    private var storage: Storage!
-    private var messages: [String] = []
-    private var documentIDs: [String] = []
-    private var keyboardHeight: CGFloat = 0
-    private var bottomConstraint: NSLayoutConstraint!
-    var isParent: Bool = true
+    @IBOutlet weak var unReadView: UIView!
+    @IBOutlet weak var chatBtn: UIButton!
+    var childData: ChildModel?
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupUI()
-        setupKeyboardHandling()
-        db = Firestore.firestore()
-        storage = Storage.storage()
-        configureViews()
-        loadMessages()
-    }
-    
-    private func setupUI() {
-        messageTextField.delegate = self
-        messageTextField.layer.cornerRadius = 20
-        messageTextField.layer.borderWidth = 1
-        messageTextField.layer.borderColor = UIColor.systemGray4.cgColor
-        messageTextField.backgroundColor = .systemBackground
-        messageTextField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: messageTextField.frame.height))
-        messageTextField.leftViewMode = .always
 
-        sendButton.layer.cornerRadius = sendButton.frame.height / 2
-        sendButton.backgroundColor = .systemBlue
-        sendButton.tintColor = .white
-
-        bottomConstraint = messageTextField.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -8)
-        bottomConstraint.isActive = true
-    }
-    
-    private func configureViews() {
-        messagesScrollView.backgroundColor = .systemBackground
-        messagesStackView.axis = .vertical
-        messagesStackView.alignment = .fill
-        messagesStackView.distribution = .fill
-        messagesStackView.spacing = 8
-        messagesStackView.layoutMargins = UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
-        messagesStackView.isLayoutMarginsRelativeArrangement = true
-    }
-    
-    private func setupKeyboardHandling() {
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
-
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-        view.addGestureRecognizer(tapGesture)
-    }
-    
-    // MARK: - Keyboard Handling
-    @objc private func keyboardWillShow(_ notification: Notification) {
-        if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
-            UIView.animate(withDuration: 0.3) {
-                self.bottomConstraint.constant = -keyboardFrame.height - 8
-                self.view.layoutIfNeeded()
-                self.scrollToBottom()
-            }
-        }
-    }
-    
-    @objc private func keyboardWillHide(_ notification: Notification) {
-        UIView.animate(withDuration: 0.3) {
-            self.bottomConstraint.constant = -8
-            self.view.layoutIfNeeded()
-        }
-    }
-    
-    @objc private func dismissKeyboard() {
-        view.endEditing(true)
-    }
-    
-    // MARK: - Message Handling
-    private func loadMessages() {
-        db.collection("messages").order(by: "timestamp").addSnapshotListener { [weak self] snapshot, error in
-            guard let self = self else { return }
-            if let error = error {
-                print("Error fetching messages: \(error)")
-                return
-            }
-            self.messages.removeAll()
-            self.documentIDs.removeAll()
-            for document in snapshot?.documents ?? [] {
-                if let message = document.data()["message"] as? String {
-                    self.messages.append(message)
-                    self.documentIDs.append(document.documentID)
-                } else if let imageUrl = document.data()["imageUrl"] as? String {
-                    self.messages.append(imageUrl)
-                    self.documentIDs.append(document.documentID)
-                }
-            }
-            self.updateMessages()
-        }
-    }
-    
-    @IBAction func sendMessageButtonTapped(_ sender: UIButton) {
-        sendMessageIfNotEmpty()
-    }
-    
-    private func sendMessageIfNotEmpty() {
-        guard let message = messageTextField.text, !message.isEmpty else { return }
-        let userRole = isParent ? "[PARENT]" : "[CHILD]"
-        
-        if let image = selectedImage {  // Assuming selectedImage is a property where the selected image is stored
-            uploadImage(image) { [weak self] imageUrl in
-                let messageData: [String: Any] = [
-                    "message": "\(userRole) \(message)",
-                    "timestamp": FieldValue.serverTimestamp(),
-                    "imageUrl": imageUrl
-                ]
-                self?.sendMessageToFirestore(messageData)
-            }
-        } else {
-            let messageData: [String: Any] = [
-                "message": "\(userRole) \(message)",
-                "timestamp": FieldValue.serverTimestamp()
-            ]
-            sendMessageToFirestore(messageData)
-        }
-    }
-    
-    private func sendMessageToFirestore(_ messageData: [String: Any]) {
-        db.collection("messages").addDocument(data: messageData) { [weak self] error in
-            if let error = error {
-                print("Error sending message: \(error)")
-            } else {
-                self?.messageTextField.text = ""
-            }
-        }
-    }
-    
-    private func uploadImage(_ image: UIImage, completion: @escaping (String) -> Void) {
-        guard let imageData = image.jpegData(compressionQuality: 0.75) else { return }
-        let imageName = UUID().uuidString
-        let imageRef = storage.reference().child("images/\(imageName).jpg")
-        
-        imageRef.putData(imageData, metadata: nil) { metadata, error in
-            if let error = error {
-                print("Error uploading image: \(error)")
-                return
-            }
-            imageRef.downloadURL { url, error in
-                if let error = error {
-                    print("Error getting image URL: \(error)")
-                    return
-                }
-                if let imageUrl = url?.absoluteString {
-                    completion(imageUrl)
-                }
-            }
-        }
-    }
-    
-    private func updateMessages() {
-        messagesStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        for (index, message) in messages.enumerated() {
-            let messageView = createMessageView(for: message, at: index)
-            messagesStackView.addArrangedSubview(messageView)
-        }
-        scrollToBottom()
-    }
-    
-    private func createMessageView(for message: String, at index: Int) -> UIView {
-        let containerView = UIView()
-        let bubbleView = UIView()
-        
-        if message.hasPrefix("http") {  // Check if it's an image URL
-            let imageView = UIImageView()
-            imageView.contentMode = .scaleAspectFill
-            imageView.clipsToBounds = true
-            imageView.loadImage(from: message)  // Load image from URL
-            containerView.addSubview(imageView)
-            // Set constraints for imageView
-            imageView.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                imageView.topAnchor.constraint(equalTo: containerView.topAnchor),
-                imageView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
-                imageView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-                imageView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor)
-            ])
-        } else {
-            let messageLabel = UILabel()
-            messageLabel.numberOfLines = 0
-            messageLabel.text = message
-            messageLabel.font = .systemFont(ofSize: 16)
-            containerView.addSubview(bubbleView)
-            bubbleView.addSubview(messageLabel)
-
-            bubbleView.layer.cornerRadius = 16
-            bubbleView.layer.masksToBounds = true
-
-            setupMessageConstraints(containerView: containerView, bubbleView: bubbleView, messageLabel: messageLabel, isParentMessage: message.contains("[PARENT]"))
+        self.tabBarController?.tabBar.isHidden = true
+        // Do any additional setup after loading the view.
+        setData()
+        self.checkUnreadMessages { res in
             
-            let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
-            bubbleView.addGestureRecognizer(longPress)
-            bubbleView.isUserInteractionEnabled = true
-            bubbleView.tag = index
+            self.unReadView.isHidden = !res
         }
-        
-        return containerView
     }
     
-    private func setupMessageConstraints(containerView: UIView, bubbleView: UIView, messageLabel: UILabel, isParentMessage: Bool) {
-        containerView.translatesAutoresizingMaskIntoConstraints = false
-        bubbleView.translatesAutoresizingMaskIntoConstraints = false
-        messageLabel.translatesAutoresizingMaskIntoConstraints = false
-
-        messageLabel.numberOfLines = 0
-        messageLabel.lineBreakMode = .byWordWrapping
-        messageLabel.preferredMaxLayoutWidth = view.frame.width * 0.75
-
-        bubbleView.backgroundColor = isParentMessage ? .systemBlue : .systemGray5
-        messageLabel.textColor = isParentMessage ? .white : .black
-
-        NSLayoutConstraint.activate([
-            messageLabel.topAnchor.constraint(equalTo: bubbleView.topAnchor, constant: 8),
-            messageLabel.bottomAnchor.constraint(equalTo: bubbleView.bottomAnchor, constant: -8),
-            messageLabel.leadingAnchor.constraint(equalTo: bubbleView.leadingAnchor, constant: 12),
-            messageLabel.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor, constant: -12),
-
-            bubbleView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 4),
-            bubbleView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -4),
-            bubbleView.widthAnchor.constraint(lessThanOrEqualTo: containerView.widthAnchor, multiplier: 0.75)
-        ])
-
-        if isParentMessage {
-            bubbleView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -8).isActive = true
-        } else {
-            bubbleView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 8).isActive = true
-        }
-    }
-
-    // MARK: - Scroll to Bottom
-    private func scrollToBottom() {
-        DispatchQueue.main.async {
-            let bottomOffset = CGPoint(x: 0, y: max(0, self.messagesScrollView.contentSize.height - self.messagesScrollView.bounds.height))
-            self.messagesScrollView.setContentOffset(bottomOffset, animated: true)
-        }
-    }
-
-    // MARK: - Handle Message Deletion
-    @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
-        guard gesture.state == .began,
-              let bubbleView = gesture.view else { return }
-        let index = bubbleView.tag
-        let documentID = documentIDs[index]
-        db.collection("messages").document(documentID).delete()
-    }
-}
-
-extension UIImageView {
-    func loadImage(from url: String) {
-        guard let url = URL(string: url) else { return }
-        URLSession.shared.dataTask(with: url) { (data, _, _) in
-            guard let data = data, let image = UIImage(data: data) else { return }
-            DispatchQueue.main.async {
-                self.image = image
+    func checkUnreadMessages(completion: @escaping (Bool) -> Void) {
+        
+        let id = Auth.auth().currentUser?.uid ?? ""
+        let db = Firestore.firestore()
+        
+        db.collection("Chats")
+            .whereField("receiver_id", isEqualTo: id)
+            .whereField("sender_id", isEqualTo: childData?.id ?? "")
+            .whereField("isRead", isEqualTo: false)
+        
+            .addSnapshotListener { snapshot, _ in
+                if let count = snapshot?.documents.count, count > 0 {
+                    completion(true)  // Show red dot
+                } else {
+                    completion(false) // Hide red dot
+                }
             }
-        }.resume()
+    }
+    
+    func setData() -> Void {
+        
+        nameLBL.text = childData?.name ?? ""
+    }
+
+    
+    // MARK: - Navigation
+
+    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Get the new view controller using segue.destination.
+        // Pass the selected object to the new view controller.
+        
+        if segue.identifier == "chat" {
+            
+            let vc = segue.destination as! ChatViewController
+            vc.user_ID = childData?.id ?? ""
+            vc.user_name = childData?.name ?? ""
+        }else if segue.identifier == "restricted_location" {
+            
+            let vc = segue.destination as! RestrictedAreasViewController
+            vc.childData = childData
+        }
+        
+    }
+    
+    
+    
+    @IBAction func chat(_ sender: Any) {
+        
+        self.performSegue(withIdentifier: "chat", sender: self)
+    }
+    
+    @IBAction func addLocation(_ sender: Any) {
+        
+        self.performSegue(withIdentifier: "restricted_location", sender: self)
+    }
+    
+    @IBAction func viewLocation(_ sender: Any) {
+        
+        
     }
 }
