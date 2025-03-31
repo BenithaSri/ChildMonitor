@@ -1,15 +1,18 @@
 import UIKit
 import MapKit
 
+// ViewController responsible for handling map-based location search and display
 class LocationViewController: UIViewController, UISearchBarDelegate, MKLocalSearchCompleterDelegate, UITableViewDelegate, UITableViewDataSource, MKMapViewDelegate {
     
+    // UI Elements
     @IBOutlet weak var map: MKMapView!
     @IBOutlet weak var search: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
     
+    // Stores search results
     var searchResults: [MKLocalSearchCompletion] = []
-    let searchCompleter = MKLocalSearchCompleter()
-    let locationManager = CLLocationManager()
+    let searchCompleter = MKLocalSearchCompleter() // Autocomplete search suggestions
+    let locationManager = CLLocationManager() // Manages user location updates
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,15 +31,15 @@ class LocationViewController: UIViewController, UISearchBarDelegate, MKLocalSear
         tableView.dataSource = self
         tableView.isHidden = true // Hide search results initially
         
-        view.bringSubviewToFront(tableView)
+        view.bringSubviewToFront(tableView) // Ensure search results appear above map
         
-        // Add navigation button to view saved locations
+        // Add a navigation button to allow users to view saved locations
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Saved Places",
                                                           style: .plain,
                                                           target: self,
                                                           action: #selector(showSavedLocations))
         
-        // Register annotation views
+        // Register annotation views for map markers
         map.register(MKMarkerAnnotationView.self,
                     forAnnotationViewWithReuseIdentifier: MKMapViewDefaultAnnotationViewReuseIdentifier)
         map.register(MKMarkerAnnotationView.self,
@@ -49,12 +52,14 @@ class LocationViewController: UIViewController, UISearchBarDelegate, MKLocalSear
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.requestWhenInUseAuthorization()
         
+        // Start updating location if services are enabled
         if CLLocationManager.locationServicesEnabled() {
             locationManager.startUpdatingLocation()
             map.showsUserLocation = true
         }
     }
     
+    // Show saved locations when navigation button is tapped
     @objc func showSavedLocations() {
         performSegue(withIdentifier: "ShowSavedLocations", sender: nil)
         printSavedLocations() // Print saved locations to console
@@ -62,13 +67,13 @@ class LocationViewController: UIViewController, UISearchBarDelegate, MKLocalSear
     
     // MARK: - Search Bar Delegate Methods
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        searchCompleter.queryFragment = searchText
-        tableView.isHidden = searchText.isEmpty
+        searchCompleter.queryFragment = searchText // Update autocomplete suggestions
+        tableView.isHidden = searchText.isEmpty // Hide table if no text is entered
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         guard let query = searchBar.text else { return }
-        searchLocation(query: query)
+        searchLocation(query: query) // Perform search
         searchBar.resignFirstResponder()
         tableView.isHidden = true
     }
@@ -82,6 +87,7 @@ class LocationViewController: UIViewController, UISearchBarDelegate, MKLocalSear
     }
     
     // MARK: - Console Logging Methods
+    // Prints saved locations stored in UserDefaults
     func printSavedLocations() {
         let savedLocations = UserDefaults.standard.array(forKey: "savedLocations") as? [[String: Any]] ?? []
         print("\n=== Saved Locations ===")
@@ -102,6 +108,7 @@ class LocationViewController: UIViewController, UISearchBarDelegate, MKLocalSear
         }
     }
     
+    // Converts distance to a human-readable format
     func formatDistance(_ distance: Double) -> String {
         if distance < 1000 {
             return String(format: "%.0f meters", distance)
@@ -111,6 +118,7 @@ class LocationViewController: UIViewController, UISearchBarDelegate, MKLocalSear
     }
     
     // MARK: - MKLocalSearch Completer Delegate Method
+    // Updates search results when autocomplete suggestions change
     func localSearchCompleterDidUpdateResults(_ completer: MKLocalSearchCompleter) {
         searchResults = completer.results
         tableView.reloadData()
@@ -130,14 +138,16 @@ class LocationViewController: UIViewController, UISearchBarDelegate, MKLocalSear
         return cell
     }
     
+    // Handles selection of a search result
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let result = searchResults[indexPath.row]
-        searchLocation(query: result.title)
+        searchLocation(query: result.title) // Search for selected location
         tableView.isHidden = true
         search.resignFirstResponder()
     }
     
     // MARK: - Search Location Method
+    // Searches for a location based on user input
     func searchLocation(query: String) {
         let request = MKLocalSearch.Request()
         request.naturalLanguageQuery = query
@@ -154,6 +164,7 @@ class LocationViewController: UIViewController, UISearchBarDelegate, MKLocalSear
             
             guard let response = response, let item = response.mapItems.first else { return }
             
+            // Remove existing annotations before adding new ones
             self.map.removeAnnotations(self.map.annotations)
             
             let annotation = MKPointAnnotation()
@@ -162,6 +173,7 @@ class LocationViewController: UIViewController, UISearchBarDelegate, MKLocalSear
             annotation.subtitle = item.placemark.title
             self.map.addAnnotation(annotation)
             
+            // Zoom into the searched location
             let region = MKCoordinateRegion(center: item.placemark.coordinate,
                                             latitudinalMeters: 1000,
                                             longitudinalMeters: 1000)
@@ -172,6 +184,7 @@ class LocationViewController: UIViewController, UISearchBarDelegate, MKLocalSear
 
 // MARK: - CLLocationManagerDelegate
 extension LocationViewController: CLLocationManagerDelegate {
+    // Updates user's location on the map
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         
@@ -180,6 +193,6 @@ extension LocationViewController: CLLocationManagerDelegate {
                                         longitudinalMeters: 1000)
         map.setRegion(region, animated: true)
         
-        locationManager.stopUpdatingLocation()
+        locationManager.stopUpdatingLocation() // Stop updates to save battery
     }
 }
