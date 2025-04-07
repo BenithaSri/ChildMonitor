@@ -135,6 +135,7 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     
     
     func authenticateParent(email: String, password: String) {
+        showLoading()
             Auth.auth().signIn(withEmail: email, password: password) { [weak self] authResult, error in
                 guard let self = self else { return }
                 if let error = error {
@@ -162,6 +163,7 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     
     
     func authenticateChild(email: String, password: String, parentID: String) {
+        showLoading()
            Auth.auth().signIn(withEmail: email, password: password) { [weak self] authResult, error in
                guard let self = self else { return }
                if let error = error {
@@ -199,6 +201,16 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
             }
             updateLoginButtonState()
         }
+
+func showLoading() {
+    spinner.startAnimating()
+    view.isUserInteractionEnabled = false
+}
+
+func hideLoading() {
+    spinner.stopAnimating()
+    view.isUserInteractionEnabled = true
+}
     
     
     
