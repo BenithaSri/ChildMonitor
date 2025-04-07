@@ -9,11 +9,15 @@ import UIKit
 import UserNotifications
 import FirebaseFirestore
 import FirebaseAuth
+import CoreLocation
 
 class NotificationsViewController: UIViewController, UNUserNotificationCenterDelegate, UITableViewDataSource, UITableViewDelegate {
 
     @IBOutlet weak var notificationToggle: UISwitch!
     @IBOutlet weak var tableView: UITableView!
+
+    let locationManager = CLLocationManager()
+    var restrictedRegions: [CLCircularRegion] = []
 
     struct NotificationItem {
         let title: String
@@ -105,6 +109,41 @@ func listenForChildLocationUpdates() {
         }
     }
 }
+//  Restricted Zones (You can later fetch these from Firestore)
+func setupRestrictedZones() {
+    let schoolArea = CLCircularRegion(
+        center: CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060), // Example coords
+        radius: 100.0,
+        identifier: "SchoolArea"
+    )
+    schoolArea.notifyOnEntry = true
+    schoolArea.notifyOnExit = false
+
+    restrictedRegions.append(schoolArea)
+
+    for region in restrictedRegions {
+        locationManager.startMonitoring(for: region)
+    }
+}
+
+    //Trigger when child enters a restricted area
+func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
+    if let circularRegion = region as? CLCircularRegion {
+        let alertMessage = "Child has entered a restricted area: \(circularRegion.identifier)"
+        
+        let notificationItem = NotificationItem(
+            title: "Restricted Area Alert",
+            body: alertMessage,
+            timestamp: Date()
+        )
+        
+        self.notificationHistory.append(notificationItem)
+        self.saveNotificationToFirestore(notification: notificationItem)
+        self.triggerLocalNotification(title: "Restricted Area Alert", body: alertMessage)
+    }
+}
+
+    
 
 //Trigger notification when child location is updated
 func triggerLocalNotification(title: String, body: String) {
