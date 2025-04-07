@@ -1,93 +1,183 @@
 import UIKit
 import MapKit
 
-// ViewController responsible for handling map-based location search and display
+// ViewController responsible for handling map-based location search, display, and user interaction
 class LocationViewController: UIViewController, UISearchBarDelegate, MKLocalSearchCompleterDelegate, UITableViewDelegate, UITableViewDataSource, MKMapViewDelegate {
     
-    // UI Elements
-    @IBOutlet weak var map: MKMapView!
-    @IBOutlet weak var search: UISearchBar!
-    @IBOutlet weak var tableView: UITableView!
+    // MARK: - UI Elements
     
-    // Stores search results
-    var searchResults: [MKLocalSearchCompletion] = []
-    let searchCompleter = MKLocalSearchCompleter() // Autocomplete search suggestions
-    let locationManager = CLLocationManager() // Manages user location updates
+    @IBOutlet weak var map: MKMapView!              // Displays the map and location annotations
+    @IBOutlet weak var search: UISearchBar!         // Search bar for entering location queries
+    @IBOutlet weak var tableView: UITableView!      // Table view to show search suggestions
+    
+    // MARK: - Properties
+    
+    var searchResults: [MKLocalSearchCompletion] = []       // Stores autocomplete search results
+    let searchCompleter = MKLocalSearchCompleter()          // Provides autocomplete location suggestions
+    let locationManager = CLLocationManager()               // Manages access to the user's current location
+    
+    // MARK: - View Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupUI()
-        setupLocationServices()
+        setupUI()                   // Configure UI elements
+        setupLocationServices()     // Setup and request location services
     }
     
-    // Setup UI components and delegates
+    // MARK: - Setup Methods
+    
+    /// Sets up UI components and their delegates
     private func setupUI() {
+        // Search bar
         search.delegate = self
         search.showsCancelButton = true
+        
+        // Autocomplete search completer
         searchCompleter.delegate = self
+        
+        // Map
         map.delegate = self
         
+        // TableView for search results
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.isHidden = true // Hide search results initially
+        tableView.isHidden = true  // Initially hidden until user types something
         
-        view.bringSubviewToFront(tableView) // Ensure search results appear above map
+        // Ensure search results table appears above map view
+        view.bringSubviewToFront(tableView)
         
-        // Add a navigation button to allow users to view saved locations
+        // Add "Saved Places" button to navigation bar
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Saved Places",
-                                                          style: .plain,
-                                                          target: self,
-                                                          action: #selector(showSavedLocations))
+                                                            style: .plain,
+                                                            target: self,
+                                                            action: #selector(showSavedLocations))
         
-        // Register annotation views for map markers
+        // Register default marker views for single and clustered annotations
         map.register(MKMarkerAnnotationView.self,
-                    forAnnotationViewWithReuseIdentifier: MKMapViewDefaultAnnotationViewReuseIdentifier)
+                     forAnnotationViewWithReuseIdentifier: MKMapViewDefaultAnnotationViewReuseIdentifier)
         map.register(MKMarkerAnnotationView.self,
-                    forAnnotationViewWithReuseIdentifier: MKMapViewDefaultClusterAnnotationViewReuseIdentifier)
+                     forAnnotationViewWithReuseIdentifier: MKMapViewDefaultClusterAnnotationViewReuseIdentifier)
     }
     
-    // Setup location services and request permission
+    /// Configures and requests user location access
     private func setupLocationServices() {
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.requestWhenInUseAuthorization()
+        locationManager.requestWhenInUseAuthorization()  // Ask for permission
         
-        // Start updating location if services are enabled
+        // Start location updates if location services are available
         if CLLocationManager.locationServicesEnabled() {
             locationManager.startUpdatingLocation()
             map.showsUserLocation = true
         }
     }
     
-    // Show saved locations when navigation button is tapped
+    // MARK: - Navigation
+    
+    /// Triggered when the "Saved Places" button is tapped
     @objc func showSavedLocations() {
         performSegue(withIdentifier: "ShowSavedLocations", sender: nil)
-        printSavedLocations() // Print saved locations to console
+        printSavedLocations() // Log saved locations to the console
     }
     
-    // MARK: - Search Bar Delegate Methods
+    // MARK: - UISearchBarDelegate
+    
+    /// Updates autocomplete suggestions as the user types
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        searchCompleter.queryFragment = searchText // Update autocomplete suggestions
-        tableView.isHidden = searchText.isEmpty // Hide table if no text is entered
+        searchCompleter.queryFragment = searchText
+        tableView.isHidden = searchText.isEmpty
     }
     
+    /// Initiates a search when the search button is tapped
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         guard let query = searchBar.text else { return }
-        searchLocation(query: query) // Perform search
+        searchLocation(query: query)
         searchBar.resignFirstResponder()
         tableView.isHidden = true
     }
     
+    /// Cancels search input and clears suggestions
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.text = ""
         searchBar.resignFirstResponder()
-        tableView.isHidden = true
         searchResults.removeAll()
         tableView.reloadData()
+        tableView.isHidden = true
     }
     
-    // MARK: - Console Logging Methods
-    // Prints saved locations stored in UserDefaults
+    // MARK: - MKLocalSearchCompleterDelegate
+    
+    /// Called when autocomplete suggestions are updated
+    func localSearchCompleterDidUpdateResults(_ completer: MKLocalSearchCompleter) {
+        searchResults = completer.results
+        tableView.reloadData()
+        tableView.isHidden = searchResults.isEmpty
+    }
+    
+    // MARK: - UITableViewDataSource & UITableViewDelegate
+    
+    /// Returns number of suggestions in the table
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return searchResults.count
+    }
+    
+    /// Configures each cell in the search results table
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "SearchResultCell", for: indexPath)
+        let result = searchResults[indexPath.row]
+        cell.textLabel?.text = result.title
+        cell.detailTextLabel?.text = result.subtitle
+        return cell
+    }
+    
+    /// Handles selection of a search result from the table
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let result = searchResults[indexPath.row]
+        searchLocation(query: result.title)
+        tableView.isHidden = true
+        search.resignFirstResponder()
+    }
+    
+    // MARK: - Location Search
+    
+    /// Performs a local search based on the provided query string
+    func searchLocation(query: String) {
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = query
+        
+        let search = MKLocalSearch(request: request)
+        
+        search.start { [weak self] response, error in
+            guard let self = self else { return }
+            
+            if let error = error {
+                print("Error searching for location: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let response = response, let item = response.mapItems.first else { return }
+            
+            // Remove previous pins before showing new location
+            self.map.removeAnnotations(self.map.annotations)
+            
+            // Create and add annotation for the searched location
+            let annotation = MKPointAnnotation()
+            annotation.coordinate = item.placemark.coordinate
+            annotation.title = item.name
+            annotation.subtitle = item.placemark.title
+            self.map.addAnnotation(annotation)
+            
+            // Center map around the selected location
+            let region = MKCoordinateRegion(center: item.placemark.coordinate,
+                                            latitudinalMeters: 1000,
+                                            longitudinalMeters: 1000)
+            self.map.setRegion(region, animated: true)
+        }
+    }
+    
+    // MARK: - Logging & Utility Methods
+    
+    /// Logs saved locations from UserDefaults to the console
     func printSavedLocations() {
         let savedLocations = UserDefaults.standard.array(forKey: "savedLocations") as? [[String: Any]] ?? []
         print("\n=== Saved Locations ===")
@@ -108,91 +198,31 @@ class LocationViewController: UIViewController, UISearchBarDelegate, MKLocalSear
         }
     }
     
-    // Converts distance to a human-readable format
+    /// Converts a distance value (in meters) into a user-friendly string
     func formatDistance(_ distance: Double) -> String {
         if distance < 1000 {
             return String(format: "%.0f meters", distance)
         } else {
-            return String(format: "%.2f km", distance/1000)
-        }
-    }
-    
-    // MARK: - MKLocalSearch Completer Delegate Method
-    // Updates search results when autocomplete suggestions change
-    func localSearchCompleterDidUpdateResults(_ completer: MKLocalSearchCompleter) {
-        searchResults = completer.results
-        tableView.reloadData()
-        tableView.isHidden = searchResults.isEmpty
-    }
-    
-    // MARK: - Table View Methods
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return searchResults.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "SearchResultCell", for: indexPath)
-        let result = searchResults[indexPath.row]
-        cell.textLabel?.text = result.title
-        cell.detailTextLabel?.text = result.subtitle
-        return cell
-    }
-    
-    // Handles selection of a search result
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let result = searchResults[indexPath.row]
-        searchLocation(query: result.title) // Search for selected location
-        tableView.isHidden = true
-        search.resignFirstResponder()
-    }
-    
-    // MARK: - Search Location Method
-    // Searches for a location based on user input
-    func searchLocation(query: String) {
-        let request = MKLocalSearch.Request()
-        request.naturalLanguageQuery = query
-        
-        let search = MKLocalSearch(request: request)
-        
-        search.start { [weak self] response, error in
-            guard let self = self else { return }
-            
-            if let error = error {
-                print("Error searching for location: \(error.localizedDescription)")
-                return
-            }
-            
-            guard let response = response, let item = response.mapItems.first else { return }
-            
-            // Remove existing annotations before adding new ones
-            self.map.removeAnnotations(self.map.annotations)
-            
-            let annotation = MKPointAnnotation()
-            annotation.coordinate = item.placemark.coordinate
-            annotation.title = item.name
-            annotation.subtitle = item.placemark.title
-            self.map.addAnnotation(annotation)
-            
-            // Zoom into the searched location
-            let region = MKCoordinateRegion(center: item.placemark.coordinate,
-                                            latitudinalMeters: 1000,
-                                            longitudinalMeters: 1000)
-            self.map.setRegion(region, animated: true)
+            return String(format: "%.2f km", distance / 1000)
         }
     }
 }
 
 // MARK: - CLLocationManagerDelegate
+
 extension LocationViewController: CLLocationManagerDelegate {
-    // Updates user's location on the map
+    
+    /// Called when the user's location is updated
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         
+        // Zoom to user's current location
         let region = MKCoordinateRegion(center: location.coordinate,
                                         latitudinalMeters: 1000,
                                         longitudinalMeters: 1000)
         map.setRegion(region, animated: true)
         
-        locationManager.stopUpdatingLocation() // Stop updates to save battery
+        // Stop further updates to conserve battery
+        locationManager.stopUpdatingLocation()
     }
 }
