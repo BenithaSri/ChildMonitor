@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<gpx version="1.1" creator="ChatGPT">
+
+    <wpt lat="40.353385" lon="-94.879168">
+        <name>University</name>
+        <time>2024-11-11T07:36:21Z</time>
+    </wpt>
+
+    <wpt lat="40.353406" lon="-94.878300">
+        <name>Midway 1</name>
+        <time>2024-11-11T07:36:26Z</time>
+    </wpt>
+
+    <wpt lat="40.353426" lon="-94.877291">
+        <name>Stop1</name>
+        <time>2024-11-11T07:36:31Z</time>
+    </wpt>
+
+    <wpt lat="40.353414" lon="-94.877500">
+        <name>Midway 2</name>
+        <time>2024-11-11T07:36:36Z</time>
+    </wpt>
+
+    <wpt lat="40.353402" lon="-94.877813">
+        <name>Stop2</name>
+        <time>2024-11-11T07:36:41Z</time>
+    </wpt>
+
+    <wpt lat="40.352300" lon="-94.875000">
+        <name>Midway 3</name>
+        <time>2024-11-11T07:36:46Z</time>
+    </wpt>
+
+    <wpt lat="40.351346" lon="-94.872790">
+        <name>Finish Line</name>
+        <time>2024-11-11T07:36:51Z</time>
+    </wpt>
+
+    <wpt lat="40.350300" lon="-94.872825">
+        <name>Midway 4</name>
+        <time>2024-11-11T07:36:56Z</time>
+    </wpt>
+
+    <wpt lat="40.349363" lon="-94.873100">
+        <name>The Pub</name>
+        <time>2024-11-11T07:37:01Z</time>
+    </wpt>
+
+    <wpt lat="40.348935" lon="-94.872867">
+        <name>Midway 5</name>
+        <time>2024-11-11T07:37:06Z</time>
+    </wpt>
+
+    <wpt lat="40.348478" lon="-94.872875">
+        <name>Simply Siam</name>
+        <time>2024-11-11T07:37:11Z</time>
+    </wpt>
+    
+    <wpt lat="40.2056" lon="-94.8241">
+        <name>Palms</name>
+        <time>2024-11-11T07:37:11Z</time>
+    </wpt>
+    
+    
+
+</gpx>
