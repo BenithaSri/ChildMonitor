@@ -1,9 +1,3 @@
-//
-//  ChatViewController.swift
-//  ChildCareApp
-//
-//  Created by Benitha on 30/01/2025.
-//
 
 import UIKit
 import FirebaseAuth
