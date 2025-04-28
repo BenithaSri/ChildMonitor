@@ -2,7 +2,6 @@
 //  HeaderCell.swift
 //  ChildCareApp
 //
-//  Created by Benitha on 11/02/2025.
 //
 
 import UIKit
