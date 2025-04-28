@@ -22,6 +22,7 @@ class LoginViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        print("LoginViewController loaded")
 
         self.navigationController?.navigationBar.isHidden = false
         self.navigationItem.title = "Login"
@@ -62,6 +63,7 @@ class LoginViewController: UIViewController {
         
         SVProgressHUD.show()
         login(email: emailTF.text!, password: passwordTF.text!)
+        print("Trying to login with email: \(email)")
     }
     
     func login(email: String, password: String) {
